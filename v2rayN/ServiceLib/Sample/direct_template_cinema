@@ -1,0 +1,17 @@
+[
+  {
+    "remarks": "GhostVPN Direct - Online cinemas",
+    "outboundTag": "direct",
+    "domain": [
+      "domain:kinopoisk.ru",
+      "domain:hd.kinopoisk.ru",
+      "domain:ivi.ru",
+      "domain:okko.tv",
+      "domain:start.ru",
+      "domain:premier.one",
+      "domain:wink.ru",
+      "domain:more.tv",
+      "domain:kion.ru"
+    ]
+  }
+]

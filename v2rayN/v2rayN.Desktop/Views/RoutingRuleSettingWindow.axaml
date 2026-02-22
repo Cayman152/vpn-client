@@ -16,9 +16,15 @@
     <DockPanel>
         <Menu Margin="{StaticResource Margin4}" DockPanel.Dock="Top">
             <MenuItem x:Name="menuRuleAdd" Header="{x:Static resx:ResUI.menuRuleAdd}" />
-            <MenuItem x:Name="menuImportRulesFromFile" Header="{x:Static resx:ResUI.menuImportRulesFromFile}" />
+            <MenuItem x:Name="menuImportRulesFromFile" Header="Импорт правил из JSON-файла" />
             <MenuItem x:Name="menuImportRulesFromClipboard" Header="{x:Static resx:ResUI.menuImportRulesFromClipboard}" />
             <MenuItem x:Name="menuImportRulesFromUrl" Header="{x:Static resx:ResUI.menuImportRulesFromUrl}" />
+            <MenuItem x:Name="menuExportRulesToJson" Header="Экспорт правил в JSON" />
+            <MenuItem Header="Шаблоны Direct">
+                <MenuItem x:Name="menuDirectPresetCinema" Header="Онлайн-кинотеатры" />
+                <MenuItem x:Name="menuDirectPresetBanks" Header="Банки" />
+                <MenuItem x:Name="menuDirectPresetProviders" Header="Провайдеры" />
+            </MenuItem>
         </Menu>
 
         <StackPanel

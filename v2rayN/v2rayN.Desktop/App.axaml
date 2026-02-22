@@ -6,7 +6,7 @@
     xmlns:resx="clr-namespace:ServiceLib.Resx;assembly=ServiceLib"
     xmlns:semi="https://irihi.tech/semi"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
-    Name="v2rayN"
+    Name="GhostVPN"
     x:DataType="vms:StatusBarViewModel"
     RequestedThemeVariant="Default">    
     <Application.Resources>
@@ -64,9 +64,9 @@
                             IsVisible="{Binding BlSystemProxyPacVisible}"
                             ToggleType="Radio" />
                         <NativeMenuItemSeparator />
-                        <NativeMenuItem Click="MenuAddServerViaClipboardClick" Header="{x:Static resx:ResUI.menuAddServerViaClipboard}" />
-                        <NativeMenuItem Command="{Binding SubUpdateCmd}" Header="{x:Static resx:ResUI.menuSubUpdate}" />
-                        <NativeMenuItem Command="{Binding SubUpdateViaProxyCmd}" Header="{x:Static resx:ResUI.menuSubUpdateViaProxy}" />
+                        <NativeMenuItem Click="MenuAddServerViaClipboardClick" Header="Добавить сервер из буфера" />
+                        <NativeMenuItem Command="{Binding SubUpdateCmd}" Header="{x:Static resx:ResUI.menuSubUpdate}" IsVisible="False" />
+                        <NativeMenuItem Command="{Binding SubUpdateViaProxyCmd}" Header="{x:Static resx:ResUI.menuSubUpdateViaProxy}" IsVisible="False" />
                         <NativeMenuItemSeparator />
                         <NativeMenuItem Click="MenuExit_Click" Header="{x:Static resx:ResUI.menuExit}" />
                     </NativeMenu>

@@ -66,6 +66,12 @@ public sealed class AppManager
             return false;
         }
         _config = config;
+        _config.UiItem ??= new();
+        _config.TunModeItem ??= new();
+        _config.UiItem.CurrentLanguage = "ru";
+        _config.UiItem.AutoHideStartup = false;
+        _config.UiItem.Hide2TrayWhenClose = false;
+        _config.TunModeItem.EnableTun = true;
         Thread.CurrentThread.CurrentUICulture = new(_config.UiItem.CurrentLanguage);
 
         //Under Win10

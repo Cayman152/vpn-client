@@ -4,7 +4,7 @@ public class Global
 {
     #region const
 
-    public const string AppName = "v2rayN";
+    public const string AppName = "Ghost VPN";
     public const string GithubUrl = "https://github.com";
     public const string GithubApiUrl = "https://api.github.com/repos";
     public const string GeoUrl = "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/{0}.dat";
@@ -41,6 +41,9 @@ public class Global
     public const string KillAsSudoOSXShellFileName = NamespaceSample + "kill_as_sudo_osx_sh";
     public const string KillAsSudoLinuxShellFileName = NamespaceSample + "kill_as_sudo_linux_sh";
     public const string SingboxFakeIPFilterFileName = NamespaceSample + "singbox_fakeip_filter";
+    public const string DirectTemplateCinemaFileName = NamespaceSample + "direct_template_cinema";
+    public const string DirectTemplateBanksFileName = NamespaceSample + "direct_template_banks";
+    public const string DirectTemplateProvidersFileName = NamespaceSample + "direct_template_providers";
 
     public const string DefaultSecurity = "auto";
     public const string DefaultNetwork = "tcp";
@@ -435,13 +438,7 @@ public class Global
 
     public static readonly List<string> Languages =
     [
-        "zh-Hans",
-        "zh-Hant",
-        "en",
-        "fa-Ir",
-        "fr",
-        "ru",
-        "hu"
+        "ru"
     ];
 
     public static readonly List<string> Alpns =

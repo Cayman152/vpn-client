@@ -50,7 +50,7 @@
                             Margin="{StaticResource Margin4}"
                             HorizontalAlignment="Center" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel x:Name="spLanguage" Orientation="Horizontal">
                         <TextBlock
                             Margin="{StaticResource Margin4}"
                             VerticalAlignment="Center"

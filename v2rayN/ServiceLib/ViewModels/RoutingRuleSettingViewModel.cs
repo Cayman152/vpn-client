@@ -18,6 +18,10 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
     public ReactiveCommand<Unit, Unit> ImportRulesFromFileCmd { get; }
     public ReactiveCommand<Unit, Unit> ImportRulesFromClipboardCmd { get; }
     public ReactiveCommand<Unit, Unit> ImportRulesFromUrlCmd { get; }
+    public ReactiveCommand<Unit, Unit> ExportRulesToJsonCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectCinemaPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectBanksPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectProvidersPresetCmd { get; }
     public ReactiveCommand<Unit, Unit> RuleRemoveCmd { get; }
     public ReactiveCommand<Unit, Unit> RuleExportSelectedCmd { get; }
     public ReactiveCommand<Unit, Unit> MoveTopCmd { get; }
@@ -51,6 +55,22 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
         ImportRulesFromUrlCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             await ImportRulesFromUrl();
+        });
+        ExportRulesToJsonCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await ExportRulesToJsonAsync();
+        });
+        AddDirectCinemaPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddDirectPresetAsync(Global.DirectTemplateCinemaFileName);
+        });
+        AddDirectBanksPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddDirectPresetAsync(Global.DirectTemplateBanksFileName);
+        });
+        AddDirectProvidersPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddDirectPresetAsync(Global.DirectTemplateProvidersFileName);
         });
 
         RuleRemoveCmd = ReactiveCommand.CreateFromTask(async () =>
@@ -190,6 +210,42 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
             await _updateView?.Invoke(EViewAction.SetClipboardData, JsonUtils.Serialize(lst, options));
+        }
+    }
+
+    private async Task ExportRulesToJsonAsync()
+    {
+        var exportRules = new List<RulesItem>();
+        foreach (var it in _rules)
+        {
+            var item = JsonUtils.DeepCopy(it);
+            item.Id = null;
+            exportRules.Add(item ?? new());
+        }
+
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+        await _updateView?.Invoke(EViewAction.ExportRoutingRulesToFile, JsonUtils.Serialize(exportRules, options));
+    }
+
+    private async Task AddDirectPresetAsync(string resourceName)
+    {
+        var presetRules = EmbedUtils.GetEmbedText(resourceName);
+        if (presetRules.IsNullOrEmpty())
+        {
+            NoticeManager.Instance.Enqueue(ResUI.OperationFailed);
+            return;
+        }
+
+        var ret = await AddBatchRoutingRulesAsync(SelectedRouting, presetRules);
+        if (ret == 0)
+        {
+            RefreshRulesItems();
+            NoticeManager.Instance.Enqueue(ResUI.OperationSuccess);
         }
     }
 

@@ -89,7 +89,7 @@ public static class ConfigHandler
         };
         config.TunModeItem ??= new TunModeItem
         {
-            EnableTun = false,
+            EnableTun = true,
             Mtu = 9000,
         };
         config.GuiItem ??= new();
@@ -104,9 +104,7 @@ public static class ConfigHandler
 
         if (config.UiItem.CurrentLanguage.IsNullOrEmpty())
         {
-            config.UiItem.CurrentLanguage = Thread.CurrentThread.CurrentCulture.TwoLetterISOLanguageName.Equals("zh", StringComparison.CurrentCultureIgnoreCase)
-                ? Global.Languages.First()
-                : Global.Languages[2];
+            config.UiItem.CurrentLanguage = Global.Languages.First();
         }
 
         config.ConstItem ??= new ConstItem();
@@ -2121,7 +2119,7 @@ public static class ConfigHandler
 
         if (!blImportAdvancedRules)
         {
-            await SetDefaultRouting(config, item2);
+            await SetDefaultRouting(config, item1);
         }
         return 0;
     }
