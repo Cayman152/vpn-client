@@ -1,0 +1,75 @@
+name: Ghost VPN Windows Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Optional release tag (example: v0.1.0)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  OutputPath64: "${{ github.workspace }}\\v2rayN\\Release\\ghost-vpn-windows-64"
+  OutputPathArm64: "${{ github.workspace }}\\v2rayN\\Release\\ghost-vpn-windows-arm64"
+  ZipPath64: "${{ github.workspace }}\\ghost-vpn-windows-64.zip"
+  ZipPathArm64: "${{ github.workspace }}\\ghost-vpn-windows-arm64.zip"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          submodules: "recursive"
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5.0.1
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build win-x64
+        shell: pwsh
+        run: |
+          dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPath64"
+          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:PublishTrimmed=true -o "$env:OutputPath64"
+
+      - name: Build win-arm64
+        shell: pwsh
+        run: |
+          dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPathArm64"
+          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:PublishTrimmed=true -o "$env:OutputPathArm64"
+
+      - name: Package zip archives
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "$env:OutputPath64\\*" -DestinationPath "$env:ZipPath64" -Force
+          Compress-Archive -Path "$env:OutputPathArm64\\*" -DestinationPath "$env:ZipPathArm64" -Force
+
+      - name: Upload win-x64 artifact
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: ghost-vpn-windows-64
+          path: ${{ env.ZipPath64 }}
+          retention-days: 14
+
+      - name: Upload win-arm64 artifact
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: ghost-vpn-windows-arm64
+          path: ${{ env.ZipPathArm64 }}
+          retention-days: 14
+
+      - name: Upload archives to GitHub Release
+        if: ${{ github.event.inputs.release_tag != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          prerelease: true
+          files: |
+            ${{ env.ZipPath64 }}
+            ${{ env.ZipPathArm64 }}
