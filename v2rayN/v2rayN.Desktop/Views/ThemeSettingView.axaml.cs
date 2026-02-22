@@ -15,6 +15,7 @@ public partial class ThemeSettingView : ReactiveUserControl<ThemeSettingViewMode
         cmbCurrentTheme.ItemsSource = Utils.GetEnumNames<ETheme>();
         cmbCurrentFontSize.ItemsSource = Enumerable.Range(Global.MinFontSize, Global.MinFontSizeCount).ToList();
         cmbCurrentLanguage.ItemsSource = Global.Languages;
+        spLanguage.IsVisible = Global.Languages.Count > 1;
 
         this.WhenActivated(disposables =>
         {

@@ -52,6 +52,9 @@ public class MainWindowViewModel : MyReactiveObject
     public ReactiveCommand<Unit, Unit> RegionalPresetIranCmd { get; }
 
     public ReactiveCommand<Unit, Unit> ReloadCmd { get; }
+    public ReactiveCommand<Unit, Unit> ConnectVpnCmd { get; }
+    public ReactiveCommand<Unit, Unit> DisconnectVpnCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddRoutingRuleCmd { get; }
 
     [Reactive]
     public bool BlReloadEnabled { get; set; }
@@ -206,6 +209,23 @@ public class MainWindowViewModel : MyReactiveObject
         {
             await Reload();
         });
+        ConnectVpnCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await Reload();
+            AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedChange);
+            NoticeManager.Instance.Enqueue("VPN включен");
+        });
+        DisconnectVpnCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
+            await CoreManager.Instance.CoreStop();
+            AppEvents.TestServerRequested.Publish();
+            NoticeManager.Instance.Enqueue("VPN отключен");
+        });
+        AddRoutingRuleCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await RoutingSettingAsync();
+        });
 
         RegionalPresetDefaultCmd = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -329,6 +349,47 @@ public class MainWindowViewModel : MyReactiveObject
         AppEvents.SubscriptionsRefreshRequested.Publish();
     }
 
+    private async Task EnsureSingleServerModeAsync()
+    {
+        var profiles = await AppManager.Instance.ProfileItems("");
+        if (profiles == null || profiles.Count <= 1)
+        {
+            return;
+        }
+
+        var active = await ConfigHandler.GetDefaultServer(_config) ?? profiles.First();
+        if (active.IndexId.IsNotEmpty())
+        {
+            await ConfigHandler.SetDefaultServerIndex(_config, active.IndexId);
+        }
+
+        var removeItems = profiles
+            .Where(t => t.IndexId != active.IndexId)
+            .ToList();
+        if (removeItems.Count <= 0)
+        {
+            return;
+        }
+
+        await ConfigHandler.RemoveServers(_config, removeItems);
+        NoticeManager.Instance.Enqueue("Ghost VPN: оставлен только один активный сервер.");
+    }
+
+    private async Task SetLatestImportedServerAsDefaultAsync(HashSet<string> oldServerIds)
+    {
+        var profiles = await AppManager.Instance.ProfileItems("");
+        if (profiles == null || profiles.Count <= 0)
+        {
+            return;
+        }
+
+        var imported = profiles.FirstOrDefault(t => !oldServerIds.Contains(t.IndexId)) ?? profiles.Last();
+        if (imported.IndexId.IsNotEmpty())
+        {
+            await ConfigHandler.SetDefaultServerIndex(_config, imported.IndexId);
+        }
+    }
+
     #endregion Servers && Groups
 
     #region Add Servers
@@ -357,6 +418,14 @@ public class MainWindowViewModel : MyReactiveObject
         }
         if (ret == true)
         {
+            if (item.IndexId.IsNotEmpty())
+            {
+                await ConfigHandler.SetDefaultServerIndex(_config, item.IndexId);
+            }
+            if (!eConfigType.IsGroupType())
+            {
+                await EnsureSingleServerModeAsync();
+            }
             await RefreshServers();
             if (item.IndexId == _config.IndexId)
             {
@@ -372,9 +441,15 @@ public class MainWindowViewModel : MyReactiveObject
             await _updateView?.Invoke(EViewAction.AddServerViaClipboard, null);
             return;
         }
+
+        var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
+            .Select(t => t.IndexId)
+            .ToHashSet();
         var ret = await ConfigHandler.AddBatchServers(_config, clipboardData, _config.SubIndexId, false);
         if (ret > 0)
         {
+            await SetLatestImportedServerAsDefaultAsync(oldServerIds);
+            await EnsureSingleServerModeAsync();
             RefreshSubscriptions();
             await RefreshServers();
             NoticeManager.Instance.Enqueue(string.Format(ResUI.SuccessfullyImportedServerViaClipboard, ret));
@@ -422,9 +497,14 @@ public class MainWindowViewModel : MyReactiveObject
         }
         else
         {
+            var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
+                .Select(t => t.IndexId)
+                .ToHashSet();
             var ret = await ConfigHandler.AddBatchServers(_config, result, _config.SubIndexId, false);
             if (ret > 0)
             {
+                await SetLatestImportedServerAsDefaultAsync(oldServerIds);
+                await EnsureSingleServerModeAsync();
                 RefreshSubscriptions();
                 await RefreshServers();
                 NoticeManager.Instance.Enqueue(ResUI.SuccessfullyImportedServerViaScan);

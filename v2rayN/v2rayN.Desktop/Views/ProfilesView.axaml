@@ -20,6 +20,7 @@
             <WrapPanel Margin="2" DockPanel.Dock="Top">
                 <ListBox
                     x:Name="lstGroup"
+                    IsVisible="False"
                     Margin="{StaticResource MarginLr4}"
                     DisplayMemberBinding="{Binding Remarks}"
                     ItemsSource="{Binding SubItems}"
@@ -41,6 +42,7 @@
 
                 <Button
                     x:Name="btnEditSub"
+                    IsVisible="False"
                     Margin="{StaticResource MarginLr4}"
                     Classes="IconButton Success"
                     ToolTip.Tip="{x:Static resx:ResUI.menuSubEdit}">
@@ -50,6 +52,7 @@
                 </Button>
                 <Button
                     x:Name="btnAddSub"
+                    IsVisible="False"
                     Margin="{StaticResource MarginLr4}"
                     Classes="IconButton Success"
                     ToolTip.Tip="{x:Static resx:ResUI.menuSubAdd}">
@@ -77,6 +80,7 @@
 
                 <Button
                     x:Name="btnFastRealPing"
+                    IsVisible="False"
                     Margin="{StaticResource MarginLr4}"
                     Classes="IconButton Success"
                     ToolTip.Tip="{x:Static resx:ResUI.menuFastRealPing}">
@@ -86,6 +90,7 @@
                 </Button>
                 <Button
                     x:Name="menuMixedTestServer"
+                    IsVisible="False"
                     Margin="{StaticResource MarginLr4}"
                     Classes="IconButton Success"
                     ToolTip.Tip="{x:Static resx:ResUI.menuMixedTestServer}">
@@ -125,26 +130,30 @@
                             x:Name="menuRemoveServer"
                             Header="{x:Static resx:ResUI.menuRemoveServer}"
                             InputGesture="Back" />
-                        <MenuItem x:Name="menuRemoveDuplicateServer" Header="{x:Static resx:ResUI.menuRemoveDuplicateServer}" />
-                        <MenuItem x:Name="menuRemoveInvalidServerResult" Header="{x:Static resx:ResUI.menuRemoveInvalidServerResult}" />
+                        <MenuItem x:Name="menuRemoveDuplicateServer" Header="{x:Static resx:ResUI.menuRemoveDuplicateServer}" IsVisible="False" />
+                        <MenuItem x:Name="menuRemoveInvalidServerResult" Header="{x:Static resx:ResUI.menuRemoveInvalidServerResult}" IsVisible="False" />
                         <Separator />
                         <MenuItem
                             x:Name="menuTcpingServer"
                             Header="{x:Static resx:ResUI.menuTcpingServer}"
+                            IsVisible="False"
                             InputGesture="Ctrl+O" />
                         <MenuItem
                             x:Name="menuRealPingServer"
                             Header="{x:Static resx:ResUI.menuRealPingServer}"
+                            IsVisible="False"
                             InputGesture="Ctrl+R" />
                         <MenuItem
                             x:Name="menuSpeedServer"
                             Header="{x:Static resx:ResUI.menuSpeedServer}"
+                            IsVisible="False"
                             InputGesture="Ctrl+T" />
-                        <MenuItem x:Name="menuSortServerResult" Header="{x:Static resx:ResUI.menuSortServerResult}" />
+                        <MenuItem x:Name="menuSortServerResult" Header="{x:Static resx:ResUI.menuSortServerResult}" IsVisible="False" />
                         <Separator />
                         <MenuItem
                             x:Name="menuMoveToGroup"
                             Header="{x:Static resx:ResUI.menuMoveToGroup}"
+                            IsVisible="False"
                             ItemsSource="{Binding DataContext.SubItems, ElementName=Root}">
                             <MenuItem.ItemTemplate>
                                 <DataTemplate>
@@ -193,7 +202,7 @@
                             <MenuItem x:Name="menuExport2ShareUrlBase64" Header="{x:Static resx:ResUI.menuExport2ShareUrlBase64}" />
                         </MenuItem>
                         <Separator />
-                        <MenuItem Header="{x:Static resx:ResUI.menuGenGroupMultipleServer}">
+                        <MenuItem Header="{x:Static resx:ResUI.menuGenGroupMultipleServer}" IsVisible="False">
                             <MenuItem x:Name="menuGenGroupMultipleServerXrayRandom" Header="{x:Static resx:ResUI.menuGenGroupMultipleServerXrayRandom}" />
                             <MenuItem x:Name="menuGenGroupMultipleServerXrayRoundRobin" Header="{x:Static resx:ResUI.menuGenGroupMultipleServerXrayRoundRobin}" />
                             <MenuItem x:Name="menuGenGroupMultipleServerXrayLeastPing" Header="{x:Static resx:ResUI.menuGenGroupMultipleServerXrayLeastPing}" />
@@ -258,6 +267,7 @@
                         Width="100"
                         Binding="{Binding SubRemarks}"
                         Header="{x:Static resx:ResUI.LvSubscription}"
+                        IsVisible="False"
                         Tag="SubRemarks" />
                     <DataGridTemplateColumn SortMemberPath="Delay" Tag="DelayVal">
                         <DataGridTemplateColumn.Header>
@@ -278,27 +288,32 @@
                         Width="100"
                         Binding="{Binding SpeedVal}"
                         Header="{x:Static resx:ResUI.LvTestSpeed}"
+                        IsVisible="False"
                         Tag="SpeedVal" />
 
                     <DataGridTextColumn
                         Width="100"
                         Binding="{Binding TodayUp}"
                         Header="{x:Static resx:ResUI.LvTodayUploadDataAmount}"
+                        IsVisible="False"
                         Tag="TodayUp" />
                     <DataGridTextColumn
                         Width="100"
                         Binding="{Binding TodayDown}"
                         Header="{x:Static resx:ResUI.LvTodayDownloadDataAmount}"
+                        IsVisible="False"
                         Tag="TodayDown" />
                     <DataGridTextColumn
                         Width="100"
                         Binding="{Binding TotalUp}"
                         Header="{x:Static resx:ResUI.LvTotalUploadDataAmount}"
+                        IsVisible="False"
                         Tag="TotalUp" />
                     <DataGridTextColumn
                         Width="100"
                         Binding="{Binding TotalDown}"
                         Header="{x:Static resx:ResUI.LvTotalDownloadDataAmount}"
+                        IsVisible="False"
                         Tag="TotalDown" />
                 </DataGrid.Columns>
             </DataGrid>

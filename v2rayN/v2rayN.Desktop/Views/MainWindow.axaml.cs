@@ -27,6 +27,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         menuCheckUpdate.Click += MenuCheckUpdate_Click;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
         menuClose.Click += MenuClose_Click;
+        ApplyGhostUiDefaults();
 
         ViewModel = new MainWindowViewModel(UpdateViewHandler);
 
@@ -78,6 +79,10 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.menuAddServerViaClipboard).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddServerViaScanCmd, v => v.menuAddServerViaScan).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddServerViaImageCmd, v => v.menuAddServerViaImage).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.btnAddServerFromClipboard).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.ConnectVpnCmd, v => v.btnConnectVpn).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.DisconnectVpnCmd, v => v.btnDisconnectVpn).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.AddRoutingRuleCmd, v => v.btnRoutingRules).DisposeWith(disposables);
 
             //sub
             this.BindCommand(ViewModel, vm => vm.SubSettingCmd, v => v.menuSubSetting).DisposeWith(disposables);
@@ -153,21 +158,16 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 
         if (Utils.IsWindows())
         {
-            Title = $"{Utils.GetVersion()} - {(Utils.IsAdministrator() ? ResUI.RunAsAdmin : ResUI.NotRunAsAdmin)}";
+            Title = $"Ghost VPN {Utils.GetVersion()} - {(Utils.IsAdministrator() ? ResUI.RunAsAdmin : ResUI.NotRunAsAdmin)}";
 
             ThreadPool.RegisterWaitForSingleObject(Program.ProgramStarted, OnProgramStarted, null, -1, false);
             HotkeyManager.Instance.Init(_config, OnHotkeyHandler);
         }
         else
         {
-            Title = $"{Utils.GetVersion()}";
+            Title = $"Ghost VPN {Utils.GetVersion()}";
         }
         menuAddServerViaScan.IsVisible = false;
-
-        if (_config.UiItem.AutoHideStartup && Utils.IsWindows())
-        {
-            WindowState = WindowState.Minimized;
-        }
 
         AddHelpMenuItem();
     }
@@ -270,6 +270,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
     {
         if (_blCloseByUser)
         {
+            base.OnClosing(e);
             return;
         }
 
@@ -279,8 +280,10 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         {
             case WindowCloseReason.OwnerWindowClosing or WindowCloseReason.WindowClosing:
                 e.Cancel = true;
-                ShowHideWindow(false);
-                break;
+                _blCloseByUser = true;
+                StorageUI();
+                await AppManager.Instance.AppExitAsync(true);
+                return;
 
             case WindowCloseReason.ApplicationShutdown or WindowCloseReason.OSShutdown:
                 await AppManager.Instance.AppExitAsync(false);
@@ -442,11 +445,32 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
     protected override void OnLoaded(object? sender, RoutedEventArgs e)
     {
         base.OnLoaded(sender, e);
-        if (_config.UiItem.AutoHideStartup)
-        {
-            ShowHideWindow(false);
-        }
         RestoreUI();
+    }
+
+    private void ApplyGhostUiDefaults()
+    {
+        _config.UiItem.AutoHideStartup = false;
+        _config.UiItem.Hide2TrayWhenClose = false;
+
+        menuSubscription.IsVisible = false;
+        menuPromotion.IsVisible = false;
+        menuHelp.IsVisible = false;
+        menuAddServerViaScan.IsVisible = false;
+        menuAddServerViaImage.IsVisible = false;
+        menuAddCustomServer.IsVisible = false;
+        menuAddPolicyGroupServer.IsVisible = false;
+        menuAddProxyChainServer.IsVisible = false;
+        menuAddVmessServer.IsVisible = false;
+        menuAddVlessServer.IsVisible = false;
+        menuAddShadowsocksServer.IsVisible = false;
+        menuAddTrojanServer.IsVisible = false;
+        menuAddHysteria2Server.IsVisible = false;
+        menuAddWireguardServer.IsVisible = false;
+        menuAddSocksServer.IsVisible = false;
+        menuAddHttpServer.IsVisible = false;
+        menuAddTuicServer.IsVisible = false;
+        menuAddAnytlsServer.IsVisible = false;
     }
 
     private void RestoreUI()

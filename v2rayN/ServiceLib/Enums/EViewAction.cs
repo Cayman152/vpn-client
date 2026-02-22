@@ -5,6 +5,7 @@ public enum EViewAction
     CloseWindow,
     ShowYesNo,
     SaveFileDialog,
+    ExportRoutingRulesToFile,
     AddBatchRoutingRulesYesNo,
     SetClipboardData,
     AddServerViaClipboard,
