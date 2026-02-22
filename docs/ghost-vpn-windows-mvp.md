@@ -46,5 +46,7 @@
    - укажи, например, `v0.1.0`, если нужно сразу положить zip в релиз.
 6. Нажми `Run workflow` в всплывающем окне.
 7. После завершения открой run и скачай:
-   - `ghost-vpn-windows-64` (основной билд для обычных ПК);
-   - `ghost-vpn-windows-arm64` (для ARM-устройств).
+   - `ghost-vpn-windows-setup-x64` (установщик `GhostVPN-Setup-x64.exe`, создает ярлык `Ghost VPN`);
+   - `ghost-vpn-windows-64` (portable-архив x64);
+   - `ghost-vpn-windows-arm64` (portable-архив для ARM).
+8. После установки запускать файл `GhostVPN.exe` через ярлык `Ghost VPN`.

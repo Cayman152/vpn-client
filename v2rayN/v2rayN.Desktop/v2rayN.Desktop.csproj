@@ -5,7 +5,11 @@
 		<ApplicationIcon>Assets\v2rayN.ico</ApplicationIcon>
 		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-		<AssemblyName>v2rayN</AssemblyName>
+		<AssemblyName>GhostVPN</AssemblyName>
+		<Product>Ghost VPN</Product>
+		<Title>Ghost VPN</Title>
+		<Description>Ghost VPN Client</Description>
+		<Company>Ghost VPN</Company>
 	</PropertyGroup>
 
 	<ItemGroup>
