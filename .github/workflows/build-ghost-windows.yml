@@ -55,13 +55,13 @@ jobs:
         shell: pwsh
         run: |
           dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPath64"
-          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:PublishTrimmed=true -o "$env:OutputPath64"
+          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPath64"
 
       - name: Build win-arm64
         shell: pwsh
         run: |
           dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPathArm64"
-          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:PublishTrimmed=true -o "$env:OutputPathArm64"
+          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPathArm64"
 
       - name: Download core binaries (xray/sing-box)
         shell: pwsh
