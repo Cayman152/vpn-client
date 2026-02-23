@@ -52,8 +52,6 @@ public class MainWindowViewModel : MyReactiveObject
     public ReactiveCommand<Unit, Unit> RegionalPresetIranCmd { get; }
 
     public ReactiveCommand<Unit, Unit> ReloadCmd { get; }
-    public ReactiveCommand<Unit, Unit> ConnectVpnCmd { get; }
-    public ReactiveCommand<Unit, Unit> DisconnectVpnCmd { get; }
     public ReactiveCommand<Unit, Unit> ToggleVpnCmd { get; }
     public ReactiveCommand<Unit, Unit> AddRoutingRuleCmd { get; }
 
@@ -66,7 +64,6 @@ public class MainWindowViewModel : MyReactiveObject
     [Reactive]
     public int TabMainSelectedIndex { get; set; }
 
-    [Reactive] public bool BlIsWindows { get; set; }
     [Reactive] public bool IsVpnConnected { get; set; }
     [Reactive] public string VpnToggleButtonText { get; set; } = "Включить VPN";
 
@@ -78,7 +75,6 @@ public class MainWindowViewModel : MyReactiveObject
     {
         _config = AppManager.Instance.Config;
         _updateView = updateView;
-        BlIsWindows = Utils.IsWindows();
         ApplyVpnState(_config.SystemProxyItem.SysProxyType == ESysProxyType.ForcedChange);
 
         #region WhenAnyValue && ReactiveCommand
@@ -212,14 +208,6 @@ public class MainWindowViewModel : MyReactiveObject
         ReloadCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             await Reload();
-        });
-        ConnectVpnCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await ConnectVpnAsync();
-        });
-        DisconnectVpnCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await DisconnectVpnAsync();
         });
         ToggleVpnCmd = ReactiveCommand.CreateFromTask(async () =>
         {

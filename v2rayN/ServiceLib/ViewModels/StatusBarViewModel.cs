@@ -29,7 +29,6 @@ public class StatusBarViewModel : MyReactiveObject
     public ReactiveCommand<Unit, Unit> CopyProxyCmdToClipboardCmd { get; }
     public ReactiveCommand<Unit, Unit> NotifyLeftClickCmd { get; }
     public ReactiveCommand<Unit, Unit> ShowWindowCmd { get; }
-    public ReactiveCommand<Unit, Unit> HideWindowCmd { get; }
 
     #region System Proxy
 
@@ -55,9 +54,6 @@ public class StatusBarViewModel : MyReactiveObject
 
     [Reactive]
     public int SystemProxySelected { get; set; }
-
-    [Reactive]
-    public bool BlSystemProxyPacVisible { get; set; }
 
     #endregion System Proxy
 
@@ -98,7 +94,6 @@ public class StatusBarViewModel : MyReactiveObject
         SelectedRouting = new();
         SelectedServer = new();
         RunningServerToolTipText = "-";
-        BlSystemProxyPacVisible = Utils.IsWindows();
         BlIsNonWindows = Utils.IsNonWindows();
 
         if (_config.TunModeItem.EnableTun && AllowEnableTun())
@@ -146,11 +141,6 @@ public class StatusBarViewModel : MyReactiveObject
         ShowWindowCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             AppEvents.ShowHideWindowRequested.Publish(true);
-            await Task.CompletedTask;
-        });
-        HideWindowCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            AppEvents.ShowHideWindowRequested.Publish(false);
             await Task.CompletedTask;
         });
 
