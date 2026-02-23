@@ -23,12 +23,7 @@ public class CoreManager
         //Copy the bin folder to the storage location (for init)
         if (Environment.GetEnvironmentVariable(Global.LocalAppData) == "1")
         {
-            var fromPath = Utils.GetBaseDirectory("bin");
-            var toPath = Utils.GetBinPath("");
-            if (fromPath != toPath)
-            {
-                FileUtils.CopyDirectory(fromPath, toPath, true, false);
-            }
+            TrySyncInstalledBinToLocal(overwrite: false);
         }
 
         if (Utils.IsNonWindows())
@@ -220,6 +215,8 @@ public class CoreManager
 
     private async Task<ProcessService?> RunProcess(CoreInfo? coreInfo, string configPath, bool displayLog, bool mayNeedSudo)
     {
+        EnsureCoreBinaries(coreInfo);
+
         var fileName = CoreInfoManager.Instance.GetCoreExecFile(coreInfo, out var msg);
         if (fileName.IsNullOrEmpty())
         {
@@ -246,6 +243,68 @@ public class CoreManager
             Logging.SaveLog(_tag, ex);
             await UpdateFunc(mayNeedSudo, ex.Message);
             return null;
+        }
+    }
+
+    private void EnsureCoreBinaries(CoreInfo? coreInfo)
+    {
+        if (coreInfo?.CoreExes == null || coreInfo.CoreType == ECoreType.v2rayN)
+        {
+            return;
+        }
+
+        var hasCore = coreInfo.CoreExes
+            .Select(name => Utils.GetBinPath(Utils.GetExeName(name), coreInfo.CoreType.ToString()))
+            .Any(File.Exists);
+        if (hasCore)
+        {
+            return;
+        }
+
+        // In LocalAppData mode, try to recover missing core binaries from the install folder.
+        if (!TrySyncInstalledBinToLocal(overwrite: false))
+        {
+            Logging.SaveLog($"{_tag} missing core binaries: {Utils.GetBinPath("", coreInfo.CoreType.ToString())}");
+            return;
+        }
+
+        var restored = coreInfo.CoreExes
+            .Select(name => Utils.GetBinPath(Utils.GetExeName(name), coreInfo.CoreType.ToString()))
+            .Any(File.Exists);
+        if (!restored)
+        {
+            Logging.SaveLog($"{_tag} failed to restore core binaries: {Utils.GetBinPath("", coreInfo.CoreType.ToString())}");
+        }
+    }
+
+    private bool TrySyncInstalledBinToLocal(bool overwrite)
+    {
+        if (Environment.GetEnvironmentVariable(Global.LocalAppData) != "1")
+        {
+            return false;
+        }
+
+        var fromPath = Utils.GetBaseDirectory("bin");
+        var toPath = Utils.GetBinPath("");
+        if (fromPath == toPath)
+        {
+            return false;
+        }
+        if (!Directory.Exists(fromPath))
+        {
+            Logging.SaveLog($"{_tag} install bin directory not found: {fromPath}");
+            return false;
+        }
+
+        try
+        {
+            FileUtils.CopyDirectory(fromPath, toPath, true, overwrite);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+            return false;
         }
     }
 

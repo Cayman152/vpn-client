@@ -98,6 +98,25 @@ jobs:
           Add-CoreBin -Arch "windows-64" -OutPath $env:OutputPath64
           Add-CoreBin -Arch "windows-arm64" -OutPath $env:OutputPathArm64
 
+      - name: Verify bundled core binaries
+        shell: pwsh
+        run: |
+          function Assert-CoreFiles {
+            param([string]$OutPath, [string]$ArchLabel)
+            $required = @(
+              (Join-Path $OutPath "bin\\xray\\xray.exe"),
+              (Join-Path $OutPath "bin\\sing_box\\sing-box.exe")
+            )
+            foreach ($file in $required) {
+              if (-not (Test-Path $file)) {
+                throw "Missing required core file for $ArchLabel: $file"
+              }
+            }
+          }
+
+          Assert-CoreFiles -OutPath $env:OutputPath64 -ArchLabel "win-x64"
+          Assert-CoreFiles -OutPath $env:OutputPathArm64 -ArchLabel "win-arm64"
+
       - name: Package zip archives
         shell: pwsh
         run: |
