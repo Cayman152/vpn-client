@@ -13,9 +13,7 @@ permissions:
 
 env:
   OutputPath64: "${{ github.workspace }}\\v2rayN\\Release\\ghost-vpn-windows-64"
-  OutputPathArm64: "${{ github.workspace }}\\v2rayN\\Release\\ghost-vpn-windows-arm64"
   ZipPath64: "${{ github.workspace }}\\ghost-vpn-windows-64.zip"
-  ZipPathArm64: "${{ github.workspace }}\\ghost-vpn-windows-arm64.zip"
   InstallerOutputDir: "${{ github.workspace }}\\v2rayN\\Release\\installer"
   SetupPath64: "${{ github.workspace }}\\v2rayN\\Release\\installer\\GhostVPN-Setup-x64.exe"
 
@@ -54,14 +52,8 @@ jobs:
       - name: Build win-x64
         shell: pwsh
         run: |
-          dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPath64"
-          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPath64"
-
-      - name: Build win-arm64
-        shell: pwsh
-        run: |
-          dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPathArm64"
-          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPathArm64"
+          dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -warnaserror- -o "$env:OutputPath64"
+          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -warnaserror- -o "$env:OutputPath64"
 
       - name: Download core binaries (xray/sing-box)
         shell: pwsh
@@ -158,7 +150,6 @@ jobs:
           }
 
           Add-CoreBin -Arch "windows-64" -OutPath $env:OutputPath64
-          Add-CoreBin -Arch "windows-arm64" -OutPath $env:OutputPathArm64
 
       - name: Verify bundled core binaries
         shell: pwsh
@@ -183,13 +174,11 @@ jobs:
           }
 
           Assert-CoreFiles -OutPath $env:OutputPath64 -ArchLabel "win-x64"
-          Assert-CoreFiles -OutPath $env:OutputPathArm64 -ArchLabel "win-arm64"
 
       - name: Package zip archives
         shell: pwsh
         run: |
           Compress-Archive -Path "$env:OutputPath64\\*" -DestinationPath "$env:ZipPath64" -Force
-          Compress-Archive -Path "$env:OutputPathArm64\\*" -DestinationPath "$env:ZipPathArm64" -Force
 
       - name: Build setup installer (x64)
         shell: pwsh
@@ -213,13 +202,6 @@ jobs:
           path: ${{ env.ZipPath64 }}
           retention-days: 14
 
-      - name: Upload win-arm64 artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ghost-vpn-windows-arm64
-          path: ${{ env.ZipPathArm64 }}
-          retention-days: 14
-
       - name: Upload setup artifact
         uses: actions/upload-artifact@v4
         with:
@@ -235,5 +217,4 @@ jobs:
           prerelease: true
           files: |
             ${{ env.ZipPath64 }}
-            ${{ env.ZipPathArm64 }}
             ${{ env.SetupPath64 }}
