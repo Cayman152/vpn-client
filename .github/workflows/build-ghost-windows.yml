@@ -63,6 +63,41 @@ jobs:
           dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -o "$env:OutputPathArm64"
           dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-arm64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:PublishTrimmed=true -o "$env:OutputPathArm64"
 
+      - name: Download core binaries (xray/sing-box)
+        shell: pwsh
+        run: |
+          $tmpRoot = Join-Path $env:RUNNER_TEMP "ghostvpn-cores"
+          New-Item -ItemType Directory -Path $tmpRoot -Force | Out-Null
+
+          function Add-CoreBin {
+            param(
+              [string]$Arch,
+              [string]$OutPath
+            )
+
+            $zipPath = Join-Path $tmpRoot "v2rayN-$Arch.zip"
+            $extractPath = Join-Path $tmpRoot "extract-$Arch"
+            $url = "https://github.com/2dust/v2rayN-core-bin/raw/refs/heads/master/v2rayN-$Arch.zip"
+
+            Invoke-WebRequest -Uri $url -OutFile $zipPath
+            Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+
+            $binSource = Get-ChildItem -Path $extractPath -Directory -Recurse |
+              Where-Object { $_.Name -eq "bin" } |
+              Select-Object -First 1
+
+            if (-not $binSource) {
+              throw "bin folder not found in core package for $Arch"
+            }
+
+            $binTarget = Join-Path $OutPath "bin"
+            New-Item -ItemType Directory -Path $binTarget -Force | Out-Null
+            Copy-Item -Path (Join-Path $binSource.FullName "*") -Destination $binTarget -Recurse -Force
+          }
+
+          Add-CoreBin -Arch "windows-64" -OutPath $env:OutputPath64
+          Add-CoreBin -Arch "windows-arm64" -OutPath $env:OutputPathArm64
+
       - name: Package zip archives
         shell: pwsh
         run: |

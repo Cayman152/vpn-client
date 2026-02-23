@@ -51,3 +51,4 @@
    - `ghost-vpn-windows-64` (portable-архив x64);
    - `ghost-vpn-windows-arm64` (portable-архив для ARM).
 8. После установки запускать файл `GhostVPN.exe` через ярлык `Ghost VPN`.
+9. Сборка автоматически включает ядра (`xray`/`sing-box`) в папку `bin`, вручную докладывать файлы не нужно.
