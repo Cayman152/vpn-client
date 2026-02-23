@@ -77,9 +77,31 @@ jobs:
 
             $zipPath = Join-Path $tmpRoot "v2rayN-$Arch.zip"
             $extractPath = Join-Path $tmpRoot "extract-$Arch"
-            $url = "https://github.com/2dust/v2rayN-core-bin/raw/refs/heads/master/v2rayN-$Arch.zip"
+            $urls = @(
+              "https://raw.githubusercontent.com/2dust/v2rayN-core-bin/master/v2rayN-$Arch.zip",
+              "https://raw.githubusercontent.com/2dust/v2rayN-core-bin/main/v2rayN-$Arch.zip",
+              "https://github.com/2dust/v2rayN-core-bin/raw/refs/heads/master/v2rayN-$Arch.zip",
+              "https://github.com/2dust/v2rayN-core-bin/raw/refs/heads/main/v2rayN-$Arch.zip"
+            )
 
-            Invoke-WebRequest -Uri $url -OutFile $zipPath
+            $downloaded = $false
+            foreach ($url in $urls) {
+              try {
+                Invoke-WebRequest -Uri $url -OutFile $zipPath -ErrorAction Stop
+                if ((Get-Item $zipPath).Length -gt 0) {
+                  $downloaded = $true
+                  break
+                }
+              }
+              catch {
+                Write-Host "Failed to download core package from: $url"
+              }
+            }
+
+            if (-not $downloaded) {
+              throw "Failed to download core package for $Arch from all known URLs"
+            }
+
             Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
 
             $binSource = Get-ChildItem -Path $extractPath -Directory -Recurse |
