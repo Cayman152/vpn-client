@@ -172,7 +172,7 @@ jobs:
 
             $xray = Join-Path $OutPath "bin\\xray\\xray.exe"
             if (-not (Test-Path $xray)) {
-              throw "Missing required core file for $ArchLabel: $xray"
+              throw "Missing required core file for ${ArchLabel}: $xray"
             }
 
             $singBoxCandidates = @(
@@ -182,7 +182,7 @@ jobs:
             $hasSingBox = $singBoxCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
             if (-not $hasSingBox) {
               $joined = ($singBoxCandidates -join ", ")
-              throw "Missing required sing-box executable for $ArchLabel. Checked: $joined"
+              throw "Missing required sing-box executable for ${ArchLabel}. Checked: $joined"
             }
           }
 
