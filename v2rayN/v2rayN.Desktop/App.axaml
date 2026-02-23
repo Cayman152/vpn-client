@@ -67,8 +67,6 @@
                         <NativeMenuItem Click="MenuAddServerViaClipboardClick" Header="Добавить сервер из буфера" />
                         <NativeMenuItem Command="{Binding SubUpdateCmd}" Header="{x:Static resx:ResUI.menuSubUpdate}" IsVisible="False" />
                         <NativeMenuItem Command="{Binding SubUpdateViaProxyCmd}" Header="{x:Static resx:ResUI.menuSubUpdateViaProxy}" IsVisible="False" />
-                        <NativeMenuItemSeparator />
-                        <NativeMenuItem Click="MenuExit_Click" Header="{x:Static resx:ResUI.menuExit}" />
                     </NativeMenu>
                 </TrayIcon.Menu>
             </TrayIcon>

@@ -69,6 +69,8 @@ public sealed class AppManager
         _config.UiItem ??= new();
         _config.TunModeItem ??= new();
         _config.UiItem.CurrentLanguage = "ru";
+        _config.UiItem.CurrentTheme = nameof(ETheme.Dark);
+        _config.UiItem.CurrentFontSize = 14;
         _config.UiItem.AutoHideStartup = false;
         _config.UiItem.Hide2TrayWhenClose = false;
         _config.TunModeItem.EnableTun = false;

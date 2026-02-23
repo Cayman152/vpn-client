@@ -3,6 +3,7 @@ using DialogHostAvalonia;
 using v2rayN.Desktop.Base;
 using v2rayN.Desktop.Common;
 using v2rayN.Desktop.Manager;
+using v2rayN.Desktop.ViewModels;
 
 namespace v2rayN.Desktop.Views;
 
@@ -26,8 +27,8 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         menuPromotion.Click += MenuPromotion_Click;
         menuCheckUpdate.Click += MenuCheckUpdate_Click;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
-        menuClose.Click += MenuClose_Click;
         ApplyGhostUiDefaults();
+        _ = new ThemeSettingViewModel();
 
         ViewModel = new MainWindowViewModel(UpdateViewHandler);
 
@@ -58,8 +59,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
                 gridMain2.IsVisible = true;
                 break;
         }
-        conTheme.Content ??= new ThemeSettingView();
-
         this.WhenActivated(disposables =>
         {
             //servers
@@ -157,14 +156,14 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 
         if (Utils.IsWindows())
         {
-            Title = $"Ghost VPN {Utils.GetVersion()} - {(Utils.IsAdministrator() ? ResUI.RunAsAdmin : ResUI.NotRunAsAdmin)}";
+            Title = $"{Utils.GetVersion()} - {(Utils.IsAdministrator() ? ResUI.RunAsAdmin : ResUI.NotRunAsAdmin)}";
 
             ThreadPool.RegisterWaitForSingleObject(Program.ProgramStarted, OnProgramStarted, null, -1, false);
             HotkeyManager.Instance.Init(_config, OnHotkeyHandler);
         }
         else
         {
-            Title = $"Ghost VPN {Utils.GetVersion()}";
+            Title = Utils.GetVersion();
         }
         menuAddServerViaScan.IsVisible = false;
 
@@ -376,19 +375,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         DialogHost.Show(_backupAndRestoreView);
     }
 
-    private async void MenuClose_Click(object? sender, RoutedEventArgs e)
-    {
-        if (await UI.ShowYesNo(this, ResUI.menuExitTips) != ButtonResult.Yes)
-        {
-            return;
-        }
-
-        _blCloseByUser = true;
-        StorageUI();
-
-        await AppManager.Instance.AppExitAsync(true);
-    }
-
     private void Shutdown(bool obj)
     {
         if (obj is bool b && _blCloseByUser == false)
@@ -451,6 +437,8 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
     {
         _config.UiItem.AutoHideStartup = false;
         _config.UiItem.Hide2TrayWhenClose = false;
+        _config.UiItem.CurrentTheme = nameof(ETheme.Dark);
+        _config.UiItem.CurrentFontSize = 14;
 
         menuSubscription.IsVisible = false;
         menuPromotion.IsVisible = false;

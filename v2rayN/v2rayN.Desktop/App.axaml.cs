@@ -58,9 +58,4 @@ public partial class App : Application
         }
     }
 
-    private async void MenuExit_Click(object? sender, EventArgs e)
-    {
-        await AppManager.Instance.AppExitAsync(false);
-        AppManager.Instance.Shutdown(true);
-    }
 }
