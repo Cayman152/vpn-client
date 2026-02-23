@@ -6,6 +6,27 @@ public static class ConfigHandler
 {
     private static readonly string _configRes = Global.ConfigFileName;
     private static readonly string _tag = "ConfigHandler";
+    private static readonly Dictionary<string, string> _ghostRoutingLocalizationMap = new()
+    {
+        { "绕过大陆(Whitelist)", "Белый список (Whitelist)" },
+        { "黑名单(Blacklist)", "Черный список (Blacklist)" },
+        { "全局(Global)", "Глобальный режим (Global)" },
+        { "阻断udp443", "Блокировать UDP 443" },
+        { "代理Google", "Прокси: Google" },
+        { "绕过局域网IP", "DIRECT: локальные IP" },
+        { "绕过局域网域名", "DIRECT: локальные домены" },
+        { "最终代理", "Итог: через VPN" },
+        { "绕过bittorrent", "DIRECT: BitTorrent" },
+        { "代理海外公共DNSIP", "Прокси: публичные DNS (IP)" },
+        { "代理海外公共DNS域名", "Прокси: публичные DNS (домены)" },
+        { "代理IP", "Прокси: IP категории" },
+        { "代理GFW", "Прокси: GFW" },
+        { "最终直连", "Итог: DIRECT" },
+        { "绕过中国公共DNSIP", "DIRECT: локальные DNS (IP)" },
+        { "绕过中国公共DNS域名", "DIRECT: локальные DNS (домены)" },
+        { "绕过中国IP", "DIRECT: локальные IP (гео)" },
+        { "绕过中国域名", "DIRECT: локальные домены (гео)" }
+    };
 
     #region ConfigHandler
 
@@ -89,7 +110,7 @@ public static class ConfigHandler
         };
         config.TunModeItem ??= new TunModeItem
         {
-            EnableTun = true,
+            EnableTun = false,
             Mtu = 9000,
         };
         config.GuiItem ??= new();
@@ -2086,6 +2107,7 @@ public static class ConfigHandler
                 config.RoutingBasicItem.RoutingIndexId = string.Empty;
             }
 
+            await LocalizeGhostRoutingItems(items);
             return 0;
         }
 
@@ -2093,7 +2115,7 @@ public static class ConfigHandler
         //Bypass the mainland
         var item2 = new RoutingItem()
         {
-            Remarks = $"{ver}绕过大陆(Whitelist)",
+            Remarks = $"{ver}Белый список (Whitelist)",
             Url = string.Empty,
             Sort = maxSort + 1,
         };
@@ -2102,7 +2124,7 @@ public static class ConfigHandler
         //Blacklist
         var item3 = new RoutingItem()
         {
-            Remarks = $"{ver}黑名单(Blacklist)",
+            Remarks = $"{ver}Черный список (Blacklist)",
             Url = string.Empty,
             Sort = maxSort + 2,
         };
@@ -2111,7 +2133,7 @@ public static class ConfigHandler
         //Global
         var item1 = new RoutingItem()
         {
-            Remarks = $"{ver}全局(Global)",
+            Remarks = $"{ver}Глобальный режим (Global)",
             Url = string.Empty,
             Sort = maxSort + 3,
         };
@@ -2122,6 +2144,61 @@ public static class ConfigHandler
             await SetDefaultRouting(config, item1);
         }
         return 0;
+    }
+
+    private static async Task LocalizeGhostRoutingItems(List<RoutingItem> items)
+    {
+        foreach (var item in items)
+        {
+            var changed = false;
+
+            var localizedRemarks = LocalizeGhostRoutingText(item.Remarks);
+            if (!string.Equals(localizedRemarks, item.Remarks, StringComparison.Ordinal))
+            {
+                item.Remarks = localizedRemarks;
+                changed = true;
+            }
+
+            var rules = JsonUtils.Deserialize<List<RulesItem>>(item.RuleSet);
+            if (rules != null && rules.Count > 0)
+            {
+                foreach (var rule in rules)
+                {
+                    var localizedRuleRemarks = LocalizeGhostRoutingText(rule.Remarks);
+                    if (!string.Equals(localizedRuleRemarks, rule.Remarks, StringComparison.Ordinal))
+                    {
+                        rule.Remarks = localizedRuleRemarks;
+                        changed = true;
+                    }
+                }
+
+                if (changed)
+                {
+                    item.RuleSet = JsonUtils.Serialize(rules, false);
+                }
+            }
+
+            if (changed)
+            {
+                await SQLiteHelper.Instance.ReplaceAsync(item);
+            }
+        }
+    }
+
+    private static string LocalizeGhostRoutingText(string? text)
+    {
+        if (text.IsNullOrEmpty())
+        {
+            return text ?? string.Empty;
+        }
+
+        var localized = text;
+        foreach (var (source, target) in _ghostRoutingLocalizationMap)
+        {
+            localized = localized.Replace(source, target, StringComparison.Ordinal);
+        }
+
+        return localized;
     }
 
     /// <summary>

@@ -1,26 +1,26 @@
 [
 	{
-		"remarks": "阻断udp443",
+		"remarks": "Блокировать UDP 443",
 		"outboundTag": "block",
 		"port": "443",
 		"network": "udp"
 	},
 	{
-		"remarks": "绕过局域网IP",
+		"remarks": "DIRECT: локальные IP",
 		"outboundTag": "direct",
 		"ip": [
 			"geoip:private"
 		]
 	},
 	{
-		"remarks": "绕过局域网域名",
+		"remarks": "DIRECT: локальные домены",
 		"outboundTag": "direct",
 		"domain": [
 			"geosite:private"
 		]
 	},
 	{
-		"remarks": "最终代理",
+		"remarks": "Итог: через VPN",
 		"port": "0-65535",
 		"outboundTag": "proxy"
 	}

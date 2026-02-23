@@ -80,8 +80,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             this.BindCommand(ViewModel, vm => vm.AddServerViaScanCmd, v => v.menuAddServerViaScan).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddServerViaImageCmd, v => v.menuAddServerViaImage).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.btnAddServerFromClipboard).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.ConnectVpnCmd, v => v.btnConnectVpn).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.DisconnectVpnCmd, v => v.btnDisconnectVpn).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.ToggleVpnCmd, v => v.btnToggleVpn).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddRoutingRuleCmd, v => v.btnRoutingRules).DisposeWith(disposables);
 
             //sub
@@ -340,7 +339,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
     {
         //ShowHideWindow(false);
 
-        NoticeManager.Instance.SendMessageAndEnqueue("Not yet implemented.(还未实现)");
+        NoticeManager.Instance.SendMessageAndEnqueue("Функция пока не реализована.");
         await Task.CompletedTask;
         //if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         //{

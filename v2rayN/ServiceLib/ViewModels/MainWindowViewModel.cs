@@ -54,6 +54,7 @@ public class MainWindowViewModel : MyReactiveObject
     public ReactiveCommand<Unit, Unit> ReloadCmd { get; }
     public ReactiveCommand<Unit, Unit> ConnectVpnCmd { get; }
     public ReactiveCommand<Unit, Unit> DisconnectVpnCmd { get; }
+    public ReactiveCommand<Unit, Unit> ToggleVpnCmd { get; }
     public ReactiveCommand<Unit, Unit> AddRoutingRuleCmd { get; }
 
     [Reactive]
@@ -66,6 +67,8 @@ public class MainWindowViewModel : MyReactiveObject
     public int TabMainSelectedIndex { get; set; }
 
     [Reactive] public bool BlIsWindows { get; set; }
+    [Reactive] public bool IsVpnConnected { get; set; }
+    [Reactive] public string VpnToggleButtonText { get; set; } = "Включить VPN";
 
     #endregion Menu
 
@@ -76,6 +79,7 @@ public class MainWindowViewModel : MyReactiveObject
         _config = AppManager.Instance.Config;
         _updateView = updateView;
         BlIsWindows = Utils.IsWindows();
+        ApplyVpnState(_config.SystemProxyItem.SysProxyType == ESysProxyType.ForcedChange);
 
         #region WhenAnyValue && ReactiveCommand
 
@@ -211,16 +215,22 @@ public class MainWindowViewModel : MyReactiveObject
         });
         ConnectVpnCmd = ReactiveCommand.CreateFromTask(async () =>
         {
-            await Reload();
-            AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedChange);
-            NoticeManager.Instance.Enqueue("VPN включен");
+            await ConnectVpnAsync();
         });
         DisconnectVpnCmd = ReactiveCommand.CreateFromTask(async () =>
         {
-            AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
-            await CoreManager.Instance.CoreStop();
-            AppEvents.TestServerRequested.Publish();
-            NoticeManager.Instance.Enqueue("VPN отключен");
+            await DisconnectVpnAsync();
+        });
+        ToggleVpnCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            if (IsVpnConnected)
+            {
+                await DisconnectVpnAsync();
+            }
+            else
+            {
+                await ConnectVpnAsync();
+            }
         });
         AddRoutingRuleCmd = ReactiveCommand.CreateFromTask(async () =>
         {
@@ -265,6 +275,11 @@ public class MainWindowViewModel : MyReactiveObject
             .AsObservable()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(async blProxy => await UpdateSubscriptionProcess("", blProxy));
+
+        AppEvents.SysProxyChangeRequested
+            .AsObservable()
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(type => ApplyVpnState(type == ESysProxyType.ForcedChange));
 
         #endregion AppEvents
 
@@ -331,6 +346,38 @@ public class MainWindowViewModel : MyReactiveObject
         }
         AppEvents.DispatcherStatisticsRequested.Publish(update);
         await Task.CompletedTask;
+    }
+
+    private void ApplyVpnState(bool connected)
+    {
+        IsVpnConnected = connected;
+        VpnToggleButtonText = connected ? "Отключить VPN" : "Включить VPN";
+    }
+
+    private async Task ConnectVpnAsync()
+    {
+        await Reload();
+
+        if (!CoreManager.Instance.IsCoreRunning())
+        {
+            AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
+            ApplyVpnState(false);
+            NoticeManager.Instance.Enqueue("Не удалось подключить VPN. Проверьте сервер и параметры.");
+            return;
+        }
+
+        AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedChange);
+        ApplyVpnState(true);
+        NoticeManager.Instance.Enqueue("VPN включен");
+    }
+
+    private async Task DisconnectVpnAsync()
+    {
+        AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
+        await CoreManager.Instance.CoreStop();
+        AppEvents.TestServerRequested.Publish();
+        ApplyVpnState(false);
+        NoticeManager.Instance.Enqueue("VPN отключен");
     }
 
     #endregion Actions
@@ -646,6 +693,8 @@ public class MainWindowViewModel : MyReactiveObject
             }
 
             ReloadResult(showClashUI);
+            ApplyVpnState(_config.SystemProxyItem.SysProxyType == ESysProxyType.ForcedChange
+                && CoreManager.Instance.IsCoreRunning());
         }
         finally
         {

@@ -1,6 +1,6 @@
 [
   {
-    "remarks": "绕过bittorrent",
+    "remarks": "DIRECT: BitTorrent",
     "outboundTag": "direct",
     "protocol": [
       "bittorrent"
@@ -14,34 +14,34 @@
     ]
   },
   {
-    "remarks": "阻断udp443",
+    "remarks": "Блокировать UDP 443",
     "outboundTag": "block",
     "port": "443",
     "network": "udp"
   },
   {
-    "remarks": "代理Google",
+    "remarks": "Прокси: Google",
     "outboundTag": "proxy",
     "domain": [
       "geosite:google"
     ]
   },
   {
-    "remarks": "绕过局域网IP",
+    "remarks": "DIRECT: локальные IP",
     "outboundTag": "direct",
     "ip": [
       "geoip:private"
     ]
   },
   {
-    "remarks": "绕过局域网域名",
+    "remarks": "DIRECT: локальные домены",
     "outboundTag": "direct",
     "domain": [
       "geosite:private"
     ]
   },
   {
-    "remarks": "代理海外公共DNSIP",
+    "remarks": "Прокси: публичные DNS (IP)",
     "outboundTag": "proxy",
     "ip": [
       "1.1.1.1",
@@ -107,7 +107,7 @@
     ]
   },
   {
-    "remarks": "代理海外公共DNS域名",
+    "remarks": "Прокси: публичные DNS (домены)",
     "outboundTag": "proxy",
     "domain": [
       "domain:cloudflare-dns.com",
@@ -121,7 +121,7 @@
     ]
   },
   {
-    "remarks": "代理IP",
+    "remarks": "Прокси: IP категории",
     "outboundTag": "proxy",
     "ip": [
       "geoip:facebook",
@@ -133,7 +133,7 @@
     ]
   },
   {
-    "remarks": "代理GFW",
+    "remarks": "Прокси: GFW",
     "outboundTag": "proxy",
     "domain": [
       "geosite:gfw",
@@ -141,7 +141,7 @@
     ]
   },
   {
-    "remarks": "最终直连",
+    "remarks": "Итог: DIRECT",
     "port": "0-65535",
     "outboundTag": "direct"
   }

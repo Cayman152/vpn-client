@@ -31,23 +31,6 @@
             </StackPanel>
 
             <StackPanel
-                x:Name="spEnableTun"
-                VerticalAlignment="Center"
-                Margin="{StaticResource MarginLr8}"
-                DockPanel.Dock="Left"
-                Orientation="Horizontal">
-                <TextBlock
-                    VerticalAlignment="Center"
-                    Margin="{StaticResource MarginLr8}"
-                    Text="{x:Static resx:ResUI.TbEnableTunAs}" />
-                <ToggleSwitch
-                    x:Name="togEnableTun"
-                    HorizontalAlignment="Center"
-                    Margin="{StaticResource Margin4}"
-                    Theme="{DynamicResource SimpleToggleSwitch}" />
-            </StackPanel>
-
-            <StackPanel
                 VerticalAlignment="Center"
                 Margin="{StaticResource MarginLr8}"
                 DockPanel.Dock="Left"

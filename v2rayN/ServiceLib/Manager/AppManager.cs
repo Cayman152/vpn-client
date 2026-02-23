@@ -71,8 +71,12 @@ public sealed class AppManager
         _config.UiItem.CurrentLanguage = "ru";
         _config.UiItem.AutoHideStartup = false;
         _config.UiItem.Hide2TrayWhenClose = false;
-        _config.TunModeItem.EnableTun = true;
-        Thread.CurrentThread.CurrentUICulture = new(_config.UiItem.CurrentLanguage);
+        _config.TunModeItem.EnableTun = false;
+        var culture = new System.Globalization.CultureInfo(_config.UiItem.CurrentLanguage);
+        Thread.CurrentThread.CurrentUICulture = culture;
+        Thread.CurrentThread.CurrentCulture = culture;
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
 
         //Under Win10
         if (Utils.IsWindows() && Environment.OSVersion.Version.Major < 10)

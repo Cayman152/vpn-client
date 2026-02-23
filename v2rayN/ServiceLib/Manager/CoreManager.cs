@@ -163,6 +163,11 @@ public class CoreManager
         }
     }
 
+    public bool IsCoreRunning()
+    {
+        return _processService != null && !_processService.HasExited;
+    }
+
     #region Private
 
     private async Task CoreStart(ProfileItem node)

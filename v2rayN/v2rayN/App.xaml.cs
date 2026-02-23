@@ -33,7 +33,7 @@ public partial class App : Application
 
         if (!AppManager.Instance.InitApp())
         {
-            UI.Show($"Loading GUI configuration file is abnormal,please restart the application{Environment.NewLine}加载GUI配置文件异常,请重启应用");
+            UI.Show($"Ошибка загрузки конфигурации интерфейса. Перезапустите приложение.{Environment.NewLine}Файл конфигурации GUI поврежден или недоступен.");
             Environment.Exit(0);
             return;
         }

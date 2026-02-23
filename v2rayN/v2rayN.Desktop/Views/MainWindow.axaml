@@ -131,15 +131,10 @@
                         Classes="Large Success"
                         Content="Добавить сервер из буфера" />
                     <Button
-                        x:Name="btnConnectVpn"
+                        x:Name="btnToggleVpn"
                         Margin="{StaticResource Margin4}"
                         Classes="Large Success"
-                        Content="Включить VPN" />
-                    <Button
-                        x:Name="btnDisconnectVpn"
-                        Margin="{StaticResource Margin4}"
-                        Classes="Large Error"
-                        Content="Отключить VPN" />
+                        Content="{Binding VpnToggleButtonText}" />
                     <Button
                         x:Name="btnRoutingRules"
                         Margin="{StaticResource Margin4}"
