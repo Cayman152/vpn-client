@@ -11,7 +11,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 {
     private static Config _config;
     private readonly WindowNotificationManager? _manager;
-    private CheckUpdateView? _checkUpdateView;
     private BackupAndRestoreView? _backupAndRestoreView;
     private bool _blCloseByUser = false;
 
@@ -23,8 +22,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         _manager = new WindowNotificationManager(TopLevel.GetTopLevel(this)) { MaxItems = 3, Position = NotificationPosition.TopRight };
 
         KeyDown += MainWindow_KeyDown;
-        menuPromotion.Click += MenuPromotion_Click;
-        menuCheckUpdate.Click += MenuCheckUpdate_Click;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
         ApplyGhostUiDefaults();
         _ = new ThemeSettingViewModel();
@@ -55,32 +52,10 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         this.WhenActivated(disposables =>
         {
             //servers
-            this.BindCommand(ViewModel, vm => vm.AddVmessServerCmd, v => v.menuAddVmessServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddVlessServerCmd, v => v.menuAddVlessServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddShadowsocksServerCmd, v => v.menuAddShadowsocksServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddSocksServerCmd, v => v.menuAddSocksServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddHttpServerCmd, v => v.menuAddHttpServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddTrojanServerCmd, v => v.menuAddTrojanServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddHysteria2ServerCmd, v => v.menuAddHysteria2Server).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddTuicServerCmd, v => v.menuAddTuicServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddWireguardServerCmd, v => v.menuAddWireguardServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddAnytlsServerCmd, v => v.menuAddAnytlsServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddCustomServerCmd, v => v.menuAddCustomServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddPolicyGroupServerCmd, v => v.menuAddPolicyGroupServer).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddProxyChainServerCmd, v => v.menuAddProxyChainServer).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.menuAddServerViaClipboard).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddServerViaScanCmd, v => v.menuAddServerViaScan).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.AddServerViaImageCmd, v => v.menuAddServerViaImage).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.btnAddServerFromClipboard).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.ToggleVpnCmd, v => v.btnToggleVpn).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddRoutingRuleCmd, v => v.btnRoutingRules).DisposeWith(disposables);
-
-            //sub
-            this.BindCommand(ViewModel, vm => vm.SubSettingCmd, v => v.menuSubSetting).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.SubUpdateCmd, v => v.menuSubUpdate).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.SubUpdateViaProxyCmd, v => v.menuSubUpdateViaProxy).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.SubGroupUpdateCmd, v => v.menuSubGroupUpdate).DisposeWith(disposables);
-            this.BindCommand(ViewModel, vm => vm.SubGroupUpdateViaProxyCmd, v => v.menuSubGroupUpdateViaProxy).DisposeWith(disposables);
 
             //setting
             this.BindCommand(ViewModel, vm => vm.ReloadCmd, v => v.menuReload).DisposeWith(disposables);
@@ -140,9 +115,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         {
             Title = Utils.GetVersion();
         }
-        menuAddServerViaScan.IsVisible = false;
-
-        AddHelpMenuItem();
     }
 
     #region Event
@@ -275,10 +247,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
                 case Key.V:
                     await AddServerViaClipboardAsync();
                     break;
-
-                case Key.S:
-                    await ScanScreenTaskAsync();
-                    break;
             }
         }
         else
@@ -288,11 +256,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
                 ViewModel?.Reload();
             }
         }
-    }
-
-    private void MenuPromotion_Click(object? sender, RoutedEventArgs e)
-    {
-        ProcUtils.ProcessStart($"{Utils.Base64Decode(Global.PromotionUrl)}?t={DateTime.Now.Ticks}");
     }
 
     public async Task AddServerViaClipboardAsync()
@@ -331,12 +294,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         {
             await ViewModel.ScanImageResult(fileName);
         }
-    }
-
-    private void MenuCheckUpdate_Click(object? sender, RoutedEventArgs e)
-    {
-        _checkUpdateView ??= new CheckUpdateView();
-        DialogHost.Show(_checkUpdateView);
     }
 
     private void MenuBackupAndRestore_Click(object? sender, RoutedEventArgs e)
@@ -409,26 +366,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         _config.UiItem.Hide2TrayWhenClose = false;
         _config.UiItem.CurrentTheme = nameof(ETheme.Dark);
         _config.UiItem.CurrentFontSize = 14;
-
-        menuSubscription.IsVisible = false;
-        menuPromotion.IsVisible = false;
-        menuHelp.IsVisible = false;
-        menuAddServerViaScan.IsVisible = false;
-        menuAddServerViaImage.IsVisible = false;
-        menuAddCustomServer.IsVisible = false;
-        menuAddPolicyGroupServer.IsVisible = false;
-        menuAddProxyChainServer.IsVisible = false;
-        menuAddVmessServer.IsVisible = false;
-        menuAddVlessServer.IsVisible = false;
-        menuAddShadowsocksServer.IsVisible = false;
-        menuAddTrojanServer.IsVisible = false;
-        menuAddHysteria2Server.IsVisible = false;
-        menuAddWireguardServer.IsVisible = false;
-        menuAddSocksServer.IsVisible = false;
-        menuAddHttpServer.IsVisible = false;
-        menuAddTuicServer.IsVisible = false;
-        menuAddAnytlsServer.IsVisible = false;
-
     }
 
     private void RestoreUI()
@@ -459,31 +396,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         else if (_config.UiItem.MainGirdOrientation == EGirdOrientation.Vertical)
         {
             ConfigHandler.SaveMainGirdHeight(_config, gridMain1.RowDefinitions[0].ActualHeight, gridMain1.RowDefinitions[2].ActualHeight);
-        }
-    }
-
-    private void AddHelpMenuItem()
-    {
-        var coreInfo = CoreInfoManager.Instance.GetCoreInfo();
-        foreach (var it in coreInfo
-            .Where(t => t.CoreType is not ECoreType.v2fly
-                        and not ECoreType.hysteria))
-        {
-            var item = new MenuItem()
-            {
-                Tag = it.Url?.Replace(@"/releases", ""),
-                Header = string.Format(ResUI.menuWebsiteItem, it.CoreType.ToString().Replace("_", " ")).UpperFirstChar()
-            };
-            item.Click += MenuItem_Click;
-            menuHelp.Items.Add(item);
-        }
-    }
-
-    private void MenuItem_Click(object? sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem item)
-        {
-            ProcUtils.ProcessStart(item.Tag?.ToString());
         }
     }
 
