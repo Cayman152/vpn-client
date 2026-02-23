@@ -458,6 +458,20 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         menuAddHttpServer.IsVisible = false;
         menuAddTuicServer.IsVisible = false;
         menuAddAnytlsServer.IsVisible = false;
+
+        // Keep settings minimal for end users.
+        menuOptionSetting.IsVisible = false;
+        menuRoutingSetting.IsVisible = false;
+        menuDNSSetting.IsVisible = false;
+        menuFullConfigTemplate.IsVisible = false;
+        menuGlobalHotkeySetting.IsVisible = false;
+        menuSettingSeparator1.IsVisible = false;
+        menuRebootAsAdmin.IsVisible = false;
+        menuSettingsSetUWP.IsVisible = false;
+        menuClearServerStatistics.IsVisible = false;
+        menuSettingSeparator2.IsVisible = false;
+        menuRegionalPresets.IsVisible = false;
+        menuOpenTheFileLocation.IsVisible = false;
     }
 
     private void RestoreUI()

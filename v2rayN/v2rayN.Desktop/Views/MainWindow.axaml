@@ -69,7 +69,7 @@
                             x:Name="menuGlobalHotkeySetting"
                             Header="{x:Static resx:ResUI.menuGlobalHotkeySetting}"
                             IsVisible="{Binding BlIsWindows}" />
-                        <Separator />
+                        <Separator x:Name="menuSettingSeparator1" />
                         <MenuItem
                             x:Name="menuRebootAsAdmin"
                             Header="{x:Static resx:ResUI.menuRebootAsAdmin}"
@@ -79,8 +79,8 @@
                             Header="{x:Static resx:ResUI.TbSettingsSetUWP}"
                             IsVisible="{Binding BlIsWindows}" />
                         <MenuItem x:Name="menuClearServerStatistics" Header="{x:Static resx:ResUI.menuClearServerStatistics}" />
-                        <Separator />
-                        <MenuItem Header="{x:Static resx:ResUI.menuRegionalPresets}">
+                        <Separator x:Name="menuSettingSeparator2" />
+                        <MenuItem x:Name="menuRegionalPresets" Header="{x:Static resx:ResUI.menuRegionalPresets}">
                             <MenuItem x:Name="menuRegionalPresetsDefault" Header="{x:Static resx:ResUI.menuRegionalPresetsDefault}" />
                             <MenuItem x:Name="menuRegionalPresetsRussia" Header="{x:Static resx:ResUI.menuRegionalPresetsRussia}" />
                             <MenuItem x:Name="menuRegionalPresetsIran" Header="{x:Static resx:ResUI.menuRegionalPresetsIran}" />
