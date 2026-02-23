@@ -69,6 +69,45 @@ jobs:
           $tmpRoot = Join-Path $env:RUNNER_TEMP "ghostvpn-cores"
           New-Item -ItemType Directory -Path $tmpRoot -Force | Out-Null
 
+          function Ensure-CoreLayout {
+            param([string]$BinTarget)
+
+            function Ensure-CoreSubdir {
+              param(
+                [string]$CoreDirName,
+                [string[]]$ExeNames
+              )
+
+              $coreDir = Join-Path $BinTarget $CoreDirName
+              New-Item -ItemType Directory -Path $coreDir -Force | Out-Null
+
+              $alreadyPresent = $ExeNames | ForEach-Object { Join-Path $coreDir $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
+              if ($alreadyPresent) {
+                return
+              }
+
+              foreach ($exeName in $ExeNames) {
+                $candidate = Get-ChildItem -Path $BinTarget -File -Recurse -ErrorAction SilentlyContinue |
+                  Where-Object { $_.Name -ieq $exeName } |
+                  Select-Object -First 1
+
+                if ($candidate) {
+                  Copy-Item -Path (Join-Path $candidate.Directory.FullName "*") -Destination $coreDir -Recurse -Force
+                  return
+                }
+
+                $flatCandidate = Join-Path $BinTarget $exeName
+                if (Test-Path $flatCandidate) {
+                  Copy-Item -Path $flatCandidate -Destination (Join-Path $coreDir $exeName) -Force
+                  return
+                }
+              }
+            }
+
+            Ensure-CoreSubdir -CoreDirName "xray" -ExeNames @("xray.exe")
+            Ensure-CoreSubdir -CoreDirName "sing_box" -ExeNames @("sing-box.exe", "sing-box-client.exe")
+          }
+
           function Add-CoreBin {
             param(
               [string]$Arch,
@@ -115,6 +154,7 @@ jobs:
             $binTarget = Join-Path $OutPath "bin"
             New-Item -ItemType Directory -Path $binTarget -Force | Out-Null
             Copy-Item -Path (Join-Path $binSource.FullName "*") -Destination $binTarget -Recurse -Force
+            Ensure-CoreLayout -BinTarget $binTarget
           }
 
           Add-CoreBin -Arch "windows-64" -OutPath $env:OutputPath64
@@ -125,14 +165,20 @@ jobs:
         run: |
           function Assert-CoreFiles {
             param([string]$OutPath, [string]$ArchLabel)
-            $required = @(
-              (Join-Path $OutPath "bin\\xray\\xray.exe"),
-              (Join-Path $OutPath "bin\\sing_box\\sing-box.exe")
+
+            $xray = Join-Path $OutPath "bin\\xray\\xray.exe"
+            if (-not (Test-Path $xray)) {
+              throw "Missing required core file for $ArchLabel: $xray"
+            }
+
+            $singBoxCandidates = @(
+              (Join-Path $OutPath "bin\\sing_box\\sing-box.exe"),
+              (Join-Path $OutPath "bin\\sing_box\\sing-box-client.exe")
             )
-            foreach ($file in $required) {
-              if (-not (Test-Path $file)) {
-                throw "Missing required core file for $ArchLabel: $file"
-              }
+            $hasSingBox = $singBoxCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $hasSingBox) {
+              $joined = ($singBoxCandidates -join ", ")
+              throw "Missing required sing-box executable for $ArchLabel. Checked: $joined"
             }
           }
 
