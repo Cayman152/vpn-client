@@ -24,13 +24,13 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v4
         with:
           submodules: "recursive"
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5.0.1
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
@@ -139,21 +139,21 @@ jobs:
           & $iscc "/DMyAppVersion=$env:APP_VERSION" "/DSourceDir=$env:OutputPath64" "/DOutputDir=$env:InstallerOutputDir" "./installer/ghost-vpn.iss"
 
       - name: Upload win-x64 artifact
-        uses: actions/upload-artifact@v6.0.0
+        uses: actions/upload-artifact@v4
         with:
           name: ghost-vpn-windows-64
           path: ${{ env.ZipPath64 }}
           retention-days: 14
 
       - name: Upload win-arm64 artifact
-        uses: actions/upload-artifact@v6.0.0
+        uses: actions/upload-artifact@v4
         with:
           name: ghost-vpn-windows-arm64
           path: ${{ env.ZipPathArm64 }}
           retention-days: 14
 
       - name: Upload setup artifact
-        uses: actions/upload-artifact@v6.0.0
+        uses: actions/upload-artifact@v4
         with:
           name: ghost-vpn-windows-setup-x64
           path: ${{ env.SetupPath64 }}
