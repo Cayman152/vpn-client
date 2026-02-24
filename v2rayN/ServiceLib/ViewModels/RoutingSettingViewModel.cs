@@ -17,7 +17,6 @@ public class RoutingSettingViewModel : MyReactiveObject
     [Reactive]
     public string DomainStrategy4Singbox { get; set; }
 
-    public ReactiveCommand<Unit, Unit> RoutingAdvancedAddCmd { get; }
     public ReactiveCommand<Unit, Unit> RoutingAdvancedRemoveCmd { get; }
     public ReactiveCommand<Unit, Unit> RoutingAdvancedSetDefaultCmd { get; }
     public ReactiveCommand<Unit, Unit> RoutingAdvancedImportRulesCmd { get; }
@@ -36,10 +35,6 @@ public class RoutingSettingViewModel : MyReactiveObject
             x => x.SelectedSource,
             selectedSource => selectedSource != null && !selectedSource.Remarks.IsNullOrEmpty());
 
-        RoutingAdvancedAddCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await RoutingAdvancedEditAsync(true);
-        });
         RoutingAdvancedRemoveCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             await RoutingAdvancedRemoveAsync();

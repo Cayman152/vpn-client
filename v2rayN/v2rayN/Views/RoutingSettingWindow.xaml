@@ -30,16 +30,6 @@
                 VerticalAlignment="Center"
                 ClipToBounds="True"
                 Style="{StaticResource MaterialDesignToolBar}">
-                <Button x:Name="menuRoutingAdvancedAdd2">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon
-                            Margin="{StaticResource MarginRight8}"
-                            VerticalAlignment="Center"
-                            Kind="Plus" />
-                        <TextBlock Style="{StaticResource ToolbarTextBlock}" Text="{x:Static resx:ResUI.menuRoutingAdvancedAdd}" />
-                    </StackPanel>
-                </Button>
-                <Separator />
                 <Button x:Name="menuRoutingAdvancedImportRules2">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon
@@ -88,10 +78,6 @@
                     Style="{StaticResource DefDataGrid}">
                     <DataGrid.ContextMenu>
                         <ContextMenu Style="{StaticResource DefContextMenu}">
-                            <MenuItem
-                                x:Name="menuRoutingAdvancedAdd"
-                                Height="{StaticResource MenuItemHeight}"
-                                Header="{x:Static resx:ResUI.menuRoutingAdvancedAdd}" />
                             <MenuItem
                                 x:Name="menuRoutingAdvancedRemove"
                                 Height="{StaticResource MenuItemHeight}"
