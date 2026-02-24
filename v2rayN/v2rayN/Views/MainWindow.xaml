@@ -46,7 +46,7 @@
                         KeyboardNavigation.TabNavigation="Continue"
                         Style="{StaticResource MaterialDesignToolBar}">
                         <Menu Margin="0,1" Style="{StaticResource ToolbarMenu}">
-                            <MenuItem Padding="{StaticResource MarginLeftRight8}" AutomationProperties.Name="{x:Static resx:ResUI.menuServers}">
+                            <MenuItem Padding="{StaticResource MarginLeftRight8}" Visibility="Collapsed" AutomationProperties.Name="{x:Static resx:ResUI.menuServers}">
                                 <MenuItem.Header>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon

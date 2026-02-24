@@ -38,49 +38,6 @@
                 IsCancel="True" />
         </StackPanel>
 
-        <Grid
-            Margin="{StaticResource Margin4}"
-            ColumnDefinitions="Auto,Auto"
-            DockPanel.Dock="Top"
-            RowDefinitions="Auto,Auto">
-
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center">
-                <HyperlinkButton Classes="WithIcon" Click="linkdomainStrategy_Click">
-                    <TextBlock Text="{x:Static resx:ResUI.TbdomainStrategy}" />
-                </HyperlinkButton>
-            </TextBlock>
-            <ComboBox
-                x:Name="cmbdomainStrategy"
-                Grid.Row="0"
-                Grid.Column="1"
-                Width="300"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center" />
-
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center">
-                <HyperlinkButton Classes="WithIcon" Click="linkdomainStrategy4Singbox_Click">
-                    <TextBlock Text="{x:Static resx:ResUI.TbdomainStrategy4Singbox}" />
-                </HyperlinkButton>
-            </TextBlock>
-            <ComboBox
-                x:Name="cmbdomainStrategy4Singbox"
-                Grid.Row="1"
-                Grid.Column="1"
-                Width="300"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center" />
-        </Grid>
-
         <TabControl x:Name="tabAdvanced">
             <TabItem HorizontalAlignment="Left" Header="{x:Static resx:ResUI.TbRoutingTabRuleList}">
                 <DataGrid

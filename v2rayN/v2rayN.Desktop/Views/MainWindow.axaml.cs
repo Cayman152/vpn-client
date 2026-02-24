@@ -52,7 +52,6 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         this.WhenActivated(disposables =>
         {
             //servers
-            this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.menuAddServerViaClipboard).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddServerViaClipboardCmd, v => v.btnAddServerFromClipboard).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.ToggleVpnCmd, v => v.btnToggleVpn).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddRoutingRuleCmd, v => v.btnRoutingRules).DisposeWith(disposables);

@@ -21,16 +21,10 @@ public partial class RoutingSettingWindow : WindowBase<RoutingSettingViewModel>
 
         ViewModel = new RoutingSettingViewModel(UpdateViewHandler);
 
-        cmbdomainStrategy.ItemsSource = Global.DomainStrategies;
-        cmbdomainStrategy4Singbox.ItemsSource = Global.DomainStrategies4Sbox;
-
         this.WhenActivated(disposables =>
         {
             this.OneWayBind(ViewModel, vm => vm.RoutingItems, v => v.lstRoutings.ItemsSource).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SelectedSource, v => v.lstRoutings.SelectedItem).DisposeWith(disposables);
-
-            this.Bind(ViewModel, vm => vm.DomainStrategy, v => v.cmbdomainStrategy.SelectedValue).DisposeWith(disposables);
-            this.Bind(ViewModel, vm => vm.DomainStrategy4Singbox, v => v.cmbdomainStrategy4Singbox.SelectedValue).DisposeWith(disposables);
 
             this.BindCommand(ViewModel, vm => vm.RoutingAdvancedAddCmd, v => v.menuRoutingAdvancedAdd).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RoutingAdvancedAddCmd, v => v.menuRoutingAdvancedAdd2).DisposeWith(disposables);
@@ -113,16 +107,6 @@ public partial class RoutingSettingWindow : WindowBase<RoutingSettingViewModel>
     private void LstRoutings_DoubleTapped(object? sender, TappedEventArgs e)
     {
         ViewModel?.RoutingAdvancedEditAsync(false);
-    }
-
-    private void linkdomainStrategy_Click(object? sender, RoutedEventArgs e)
-    {
-        ProcUtils.ProcessStart("https://xtls.github.io/config/routing.html");
-    }
-
-    private void linkdomainStrategy4Singbox_Click(object? sender, RoutedEventArgs e)
-    {
-        ProcUtils.ProcessStart("https://sing-box.sagernet.org/zh/configuration/route/rule_action/#strategy");
     }
 
     private void btnCancel_Click(object? sender, RoutedEventArgs e)

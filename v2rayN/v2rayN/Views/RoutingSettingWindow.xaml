@@ -72,55 +72,6 @@
                 Style="{StaticResource DefButton}" />
         </StackPanel>
 
-        <Grid Margin="{StaticResource Margin8}" DockPanel.Dock="Top">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center"
-                Style="{StaticResource ToolbarTextBlock}">
-                <Hyperlink Click="linkdomainStrategy_Click">
-                    <TextBlock Text="{x:Static resx:ResUI.TbdomainStrategy}" />
-                    <materialDesign:PackIcon Kind="Link" />
-                </Hyperlink>
-            </TextBlock>
-            <ComboBox
-                x:Name="cmbdomainStrategy"
-                Grid.Row="0"
-                Grid.Column="1"
-                Width="300"
-                Margin="{StaticResource Margin4}"
-                Style="{StaticResource DefComboBox}" />
-
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center"
-                Style="{StaticResource ToolbarTextBlock}">
-                <Hyperlink Click="linkdomainStrategy4Singbox_Click">
-                    <TextBlock Text="{x:Static resx:ResUI.TbdomainStrategy4Singbox}" />
-                    <materialDesign:PackIcon Kind="Link" />
-                </Hyperlink>
-            </TextBlock>
-            <ComboBox
-                x:Name="cmbdomainStrategy4Singbox"
-                Grid.Row="1"
-                Grid.Column="1"
-                Width="300"
-                Margin="{StaticResource Margin4}"
-                Style="{StaticResource DefComboBox}" />
-        </Grid>
-
         <TabControl x:Name="tabAdvanced">
             <TabItem HorizontalAlignment="Left" Header="{x:Static resx:ResUI.TbRoutingTabRuleList}">
                 <DataGrid
