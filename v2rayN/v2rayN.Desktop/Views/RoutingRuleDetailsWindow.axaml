@@ -18,13 +18,13 @@
             Margin="{StaticResource Margin4}"
             ColumnDefinitions="Auto,Auto,Auto"
             DockPanel.Dock="Top"
-            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+            RowDefinitions="Auto,Auto,Auto">
             <TextBlock
                 Grid.Row="0"
                 Grid.Column="0"
                 Margin="{StaticResource Margin4}"
                 VerticalAlignment="Center"
-                Text="{x:Static resx:ResUI.LvRemarks}" />
+                Text="Название" />
             <TextBox
                 x:Name="txtRemarks"
                 Grid.Row="0"
@@ -32,20 +32,6 @@
                 Width="300"
                 Margin="{StaticResource Margin4}"
                 HorizontalAlignment="Left" />
-            <StackPanel
-                Grid.Row="0"
-                Grid.Column="2"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <ToggleSwitch
-                    x:Name="togEnabled"
-                    Margin="{StaticResource Margin4}"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center" />
-
-            </StackPanel>
 
             <TextBlock
                 Grid.Row="1"
@@ -88,100 +74,8 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
-                <Button
-                    x:Name="btnSelectProfile"
-                    Margin="0,0,8,0"
-                    Click="BtnSelectProfile_Click"
-                    Content="{x:Static resx:ResUI.TbSelectProfile}" />
                 <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbRuleOutboundTagTip}" />
             </StackPanel>
-
-            <TextBlock
-                Grid.Row="3"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center"
-                Text="port" />
-            <TextBox
-                x:Name="txtPort"
-                Grid.Row="3"
-                Grid.Column="1"
-                Width="300"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left" />
-            <TextBlock
-                Grid.Row="3"
-                Grid.Column="2"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Text="{x:Static resx:ResUI.TbRuleMatchingTips}" />
-
-            <TextBlock
-                Grid.Row="4"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center"
-                Text="protocol" />
-            <ListBox
-                x:Name="clbProtocol"
-                Grid.Row="4"
-                Grid.Column="1"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                SelectionMode="Multiple,Toggle"
-                Theme="{DynamicResource CardCheckGroupListBox}" />
-            <TextBlock
-                Grid.Row="4"
-                Grid.Column="2"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center">
-                <HyperlinkButton Classes="WithIcon" Click="linkRuleobjectDoc_Click">
-                    <TextBlock Text="{x:Static resx:ResUI.TbRuleobjectDoc}" />
-                </HyperlinkButton>
-            </TextBlock>
-
-            <TextBlock
-                Grid.Row="5"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center"
-                Text="inboundTag" />
-            <ListBox
-                x:Name="clbInboundTag"
-                Grid.Row="5"
-                Grid.Column="1"
-                Margin="{StaticResource Margin4}"
-                SelectionMode="Multiple,Toggle"
-                Theme="{DynamicResource CardCheckGroupListBox}" />
-            <TextBlock
-                Grid.Row="5"
-                Grid.Column="2"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Text="{x:Static resx:ResUI.TbRoutingInboundTagTips}" />
-
-            <TextBlock
-                Grid.Row="6"
-                Grid.Column="0"
-                Margin="{StaticResource Margin4}"
-                VerticalAlignment="Center"
-                Text="network" />
-            <ComboBox
-                x:Name="cmbNetwork"
-                Grid.Row="6"
-                Grid.Column="1"
-                Width="300"
-                Margin="{StaticResource Margin4}"
-                MaxDropDownHeight="1000" />
-            <TextBlock
-                Grid.Row="6"
-                Grid.Column="2"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Text="{x:Static resx:ResUI.TbRoutingTips}" />
         </Grid>
 
         <StackPanel

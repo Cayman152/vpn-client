@@ -2,9 +2,6 @@ namespace ServiceLib.ViewModels;
 
 public class RoutingRuleDetailsViewModel : MyReactiveObject
 {
-    public IList<string> ProtocolItems { get; set; }
-    public IList<string> InboundTagItems { get; set; }
-
     [Reactive]
     public RulesItem SelectedSource { get; set; }
 
@@ -47,6 +44,13 @@ public class RoutingRuleDetailsViewModel : MyReactiveObject
             SelectedSource = rulesItem;
         }
 
+        // The simplified editor does not expose advanced matchers.
+        SelectedSource.Enabled = true;
+        SelectedSource.Port = null;
+        SelectedSource.Network = null;
+        SelectedSource.Protocol = null;
+        SelectedSource.InboundTag = null;
+
         Domain = Utils.List2String(SelectedSource.Domain, true);
         IP = Utils.List2String(SelectedSource.Ip, true);
         Process = Utils.List2String(SelectedSource.Process, true);
@@ -71,20 +75,20 @@ public class RoutingRuleDetailsViewModel : MyReactiveObject
             SelectedSource.Ip = Utils.String2List(IP);
             SelectedSource.Process = Utils.String2List(Process);
         }
-        SelectedSource.Protocol = ProtocolItems?.ToList();
-        SelectedSource.InboundTag = InboundTagItems?.ToList();
+        SelectedSource.Enabled = true;
+        SelectedSource.Port = null;
+        SelectedSource.Network = null;
+        SelectedSource.Protocol = null;
+        SelectedSource.InboundTag = null;
         SelectedSource.RuleType = RuleType.IsNullOrEmpty() ? null : (ERuleType)Enum.Parse(typeof(ERuleType), RuleType);
 
         var hasRule = SelectedSource.Domain?.Count > 0
           || SelectedSource.Ip?.Count > 0
-          || SelectedSource.Protocol?.Count > 0
-          || SelectedSource.Process?.Count > 0
-          || SelectedSource.Port.IsNotEmpty()
-          || SelectedSource.Network.IsNotEmpty();
+          || SelectedSource.Process?.Count > 0;
 
         if (!hasRule)
         {
-            NoticeManager.Instance.Enqueue(string.Format(ResUI.RoutingRuleDetailRequiredTips, "Network/Port/Protocol/Domain/IP/Process"));
+            NoticeManager.Instance.Enqueue(string.Format(ResUI.RoutingRuleDetailRequiredTips, "Domain/IP/Process"));
             return;
         }
         //NoticeHandler.Instance.Enqueue(ResUI.OperationSuccess);
