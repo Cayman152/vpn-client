@@ -1,18 +1,19 @@
-# v2rayN
+# Ghost VPN
 
-A GUI client for Windows, Linux and macOS, support [Xray](https://github.com/XTLS/Xray-core)
-and [sing-box](https://github.com/SagerNet/sing-box)
-and [others](https://github.com/2dust/v2rayN/wiki/List-of-supported-cores)
+Собственный VPN-клиент для Windows (с фокусом на простое подключение и маршрутизацию по правилам).
 
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/2dust/v2rayN)](https://github.com/2dust/v2rayN/commits/master)
-[![CodeFactor](https://www.codefactor.io/repository/github/2dust/v2rayn/badge)](https://www.codefactor.io/repository/github/2dust/v2rayn)
-[![GitHub Releases](https://img.shields.io/github/downloads/2dust/v2rayN/latest/total?logo=github)](https://github.com/2dust/v2rayN/releases)
-[![Chat on Telegram](https://img.shields.io/badge/Chat%20on-Telegram-brightgreen.svg)](https://t.me/v2rayn)
+## Поддерживаемые ядра
 
-## How to use
+- [Xray](https://github.com/XTLS/Xray-core)
+- [sing-box](https://github.com/SagerNet/sing-box)
 
-Read the [Wiki](https://github.com/2dust/v2rayN/wiki) for details.
+## Сборка Windows
 
-## Telegram Channel
+- Workflow: `Ghost VPN Windows Build`
+- Артефакты после успешной сборки:
+- `GhostVPN-windows-x64.zip`
+- `GhostVPN-Setup-x64.exe`
 
-[github_2dust](https://t.me/github_2dust)
+## Поддержка
+
+- Telegram: [nkvv_ghost_bot](https://t.me/nkvv_ghost_bot)

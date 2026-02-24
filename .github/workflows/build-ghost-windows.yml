@@ -12,10 +12,10 @@ permissions:
   contents: write
 
 env:
-  OutputPath64: "${{ github.workspace }}\\v2rayN\\Release\\ghost-vpn-windows-64"
-  ZipPath64: "${{ github.workspace }}\\ghost-vpn-windows-64.zip"
-  InstallerOutputDir: "${{ github.workspace }}\\v2rayN\\Release\\installer"
-  SetupPath64: "${{ github.workspace }}\\v2rayN\\Release\\installer\\GhostVPN-Setup-x64.exe"
+  OutputPath64: "${{ github.workspace }}\\build\\ghost-vpn-windows-64"
+  ArtifactDir: "${{ github.workspace }}\\artifacts"
+  ZipPath64: "${{ github.workspace }}\\artifacts\\GhostVPN-windows-x64.zip"
+  SetupPath64: "${{ github.workspace }}\\artifacts\\GhostVPN-Setup-x64.exe"
 
 jobs:
   build:
@@ -191,6 +191,7 @@ jobs:
       - name: Package zip archives
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Path "$env:ArtifactDir" -Force | Out-Null
           Compress-Archive -Path "$env:OutputPath64\\*" -DestinationPath "$env:ZipPath64" -Force
 
       - name: Build setup installer (x64)
@@ -205,22 +206,35 @@ jobs:
             throw "Inno Setup compiler not found"
           }
 
-          New-Item -ItemType Directory -Path "$env:InstallerOutputDir" -Force | Out-Null
-          & $iscc "/DMyAppVersion=$env:APP_VERSION" "/DSourceDir=$env:OutputPath64" "/DOutputDir=$env:InstallerOutputDir" "./installer/ghost-vpn.iss"
+          New-Item -ItemType Directory -Path "$env:ArtifactDir" -Force | Out-Null
+          & $iscc "/DMyAppVersion=$env:APP_VERSION" "/DSourceDir=$env:OutputPath64" "/DOutputDir=$env:ArtifactDir" "./installer/ghost-vpn.iss"
 
-      - name: Upload win-x64 artifact
+          if (-not (Test-Path $env:SetupPath64)) {
+            $builtInstaller = Get-ChildItem -Path $env:ArtifactDir -Filter "*.exe" -File | Select-Object -First 1
+            if (-not $builtInstaller) {
+              throw "Setup installer was not created"
+            }
+            Move-Item -Path $builtInstaller.FullName -Destination $env:SetupPath64 -Force
+          }
+
+      - name: Upload windows artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ghost-vpn-windows-64
-          path: ${{ env.ZipPath64 }}
+          name: ghost-vpn-windows
+          path: |
+            ${{ env.ZipPath64 }}
+            ${{ env.SetupPath64 }}
           retention-days: 14
 
-      - name: Upload setup artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ghost-vpn-windows-setup-x64
-          path: ${{ env.SetupPath64 }}
-          retention-days: 14
+      - name: Publish build summary
+        shell: pwsh
+        run: |
+          @"
+          ## Ghost VPN build artifacts
+          - Artifact name: ghost-vpn-windows
+          - File 1: GhostVPN-windows-x64.zip
+          - File 2: GhostVPN-Setup-x64.exe
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
       - name: Upload archives to GitHub Release
         if: ${{ github.event.inputs.release_tag != '' }}
