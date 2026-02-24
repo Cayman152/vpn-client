@@ -99,15 +99,31 @@ jobs:
           function Get-LatestAsset {
             param(
               [string]$Repo,
-              [string]$Pattern
+              [string[]]$Patterns
             )
 
             $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers $headers
-            $asset = $release.assets | Where-Object { $_.name -match $Pattern } | Select-Object -First 1
+            if (-not $release -or -not $release.assets) {
+              throw "Release metadata has no assets for repository '$Repo'"
+            }
+
+            $asset = $null
+            $matchedPattern = $null
+            foreach ($pattern in $Patterns) {
+              $asset = $release.assets | Where-Object { $_.name -match $pattern } | Select-Object -First 1
+              if ($asset) {
+                $matchedPattern = $pattern
+                break
+              }
+            }
 
             if (-not $asset) {
-              throw "No asset matched pattern '$Pattern' for repository '$Repo'"
+              $availableAssets = ($release.assets | Select-Object -ExpandProperty name | Sort-Object | Select-Object -First 40) -join ", "
+              $patternsText = ($Patterns -join "; ")
+              throw "No asset matched any pattern '$patternsText' for repository '$Repo'. Available assets sample: $availableAssets"
             }
+
+            Write-Host "Selected asset for $Repo: $($asset.name) (pattern: $matchedPattern)"
 
             return [PSCustomObject]@{
               Tag = $release.tag_name
@@ -142,8 +158,17 @@ jobs:
             Copy-Item -Path (Join-Path $exePath.Directory.FullName "*") -Destination $TargetDir -Recurse -Force
           }
 
-          $xrayAsset = Get-LatestAsset -Repo "XTLS/Xray-core" -Pattern "^Xray-windows-64\\.zip$"
-          $singBoxAsset = Get-LatestAsset -Repo "SagerNet/sing-box" -Pattern "^sing-box-.*-windows-amd64\\.zip$"
+          $xrayAsset = Get-LatestAsset -Repo "XTLS/Xray-core" -Patterns @(
+            "^Xray-windows-64\\.zip$",
+            "^Xray-windows-amd64\\.zip$",
+            "^Xray-windows-x64\\.zip$",
+            "^Xray-windows-(64|amd64|x64).+\\.zip$"
+          )
+          $singBoxAsset = Get-LatestAsset -Repo "SagerNet/sing-box" -Patterns @(
+            "^sing-box-.*-windows-amd64\\.zip$",
+            "^sing-box-.*-windows-x86_64\\.zip$",
+            "^sing-box-.*windows.*(amd64|x86_64|x64|64).*.zip$"
+          )
 
           $xrayTarget = Join-Path $env:OutputPath64 "bin\\xray"
           $singBoxTarget = Join-Path $env:OutputPath64 "bin\\sing_box"
