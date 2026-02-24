@@ -10,9 +10,7 @@
 ## Сборка Windows
 
 - Workflow: `Ghost VPN Windows Build`
-- Артефакты после успешной сборки:
-- `GhostVPN-windows-x64.zip`
-- `GhostVPN-Setup-x64.exe`
+- Артефакты после успешной сборки: `GhostVPN-windows-x64.zip`, `GhostVPN-Setup-x64.exe`
 
 ## Поддержка
 
