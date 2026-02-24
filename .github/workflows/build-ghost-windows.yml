@@ -32,17 +32,34 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Resolve source paths
+        shell: pwsh
+        run: |
+          $sourceRoot = (Resolve-Path "./GhostVPN").Path
+          $desktopProject = Join-Path $sourceRoot "GhostVPN.Desktop\\GhostVPN.Desktop.csproj"
+          $amazToolProject = Join-Path $sourceRoot "AmazTool\\AmazTool.csproj"
+          $propsPath = Join-Path $sourceRoot "Directory.Build.props"
+          $globalHotKeysFile = Join-Path $sourceRoot "GlobalHotKeys\\src\\GlobalHotKeys\\HotKeyManager.cs"
+
+          foreach ($requiredPath in @($desktopProject, $amazToolProject, $propsPath, $globalHotKeysFile)) {
+            if (-not (Test-Path $requiredPath)) {
+              throw "Required path not found: $requiredPath"
+            }
+          }
+
+          "SOURCE_ROOT=$sourceRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PROJECT_DESKTOP=$desktopProject" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PROJECT_AMAZTOOL=$amazToolProject" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PROPS_PATH=$propsPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "GLOBAL_HOTKEYS_FILE=$globalHotKeysFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Patch GlobalHotKeys nullable warning
         shell: pwsh
         run: |
-          $file = "./v2rayN/GlobalHotKeys/src/GlobalHotKeys/HotKeyManager.cs"
-          if (-not (Test-Path $file)) {
-            throw "GlobalHotKeys source file not found: $file"
-          }
-          $content = Get-Content -Path $file -Raw
+          $content = Get-Content -Path $env:GLOBAL_HOTKEYS_FILE -Raw
           $patched = $content.Replace("GetModuleHandle(null);", "GetModuleHandle(null!);")
           if ($patched -ne $content) {
-            Set-Content -Path $file -Value $patched -Encoding utf8
+            Set-Content -Path $env:GLOBAL_HOTKEYS_FILE -Value $patched -Encoding utf8
           }
 
       - name: Resolve app version
@@ -56,7 +73,7 @@ jobs:
             $version = $tag
           }
           else {
-            [xml]$props = Get-Content "./v2rayN/Directory.Build.props"
+            [xml]$props = Get-Content $env:PROPS_PATH
             $baseVersion = $props.Project.PropertyGroup[0].Version
             $version = "$baseVersion.${{ github.run_number }}"
           }
@@ -65,104 +82,74 @@ jobs:
       - name: Build win-x64
         shell: pwsh
         run: |
-          dotnet publish ./v2rayN/v2rayN.Desktop/v2rayN.Desktop.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPath64"
-          dotnet publish ./v2rayN/AmazTool/AmazTool.csproj -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPath64"
+          dotnet publish "$env:PROJECT_DESKTOP" -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPath64"
+          dotnet publish "$env:PROJECT_AMAZTOOL" -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPath64"
 
       - name: Download core binaries (xray/sing-box)
         shell: pwsh
         run: |
+          $headers = @{
+            "User-Agent" = "ghost-vpn-build"
+            "Accept" = "application/vnd.github+json"
+          }
+
           $tmpRoot = Join-Path $env:RUNNER_TEMP "ghostvpn-cores"
           New-Item -ItemType Directory -Path $tmpRoot -Force | Out-Null
 
-          function Ensure-CoreLayout {
-            param([string]$BinTarget)
+          function Get-LatestAsset {
+            param(
+              [string]$Repo,
+              [string]$Pattern
+            )
 
-            function Ensure-CoreSubdir {
-              param(
-                [string]$CoreDirName,
-                [string[]]$ExeNames
-              )
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers $headers
+            $asset = $release.assets | Where-Object { $_.name -match $Pattern } | Select-Object -First 1
 
-              $coreDir = Join-Path $BinTarget $CoreDirName
-              New-Item -ItemType Directory -Path $coreDir -Force | Out-Null
-
-              $alreadyPresent = $ExeNames | ForEach-Object { Join-Path $coreDir $_ } | Where-Object { Test-Path $_ } | Select-Object -First 1
-              if ($alreadyPresent) {
-                return
-              }
-
-              foreach ($exeName in $ExeNames) {
-                $candidate = Get-ChildItem -Path $BinTarget -File -Recurse -ErrorAction SilentlyContinue |
-                  Where-Object { $_.Name -ieq $exeName } |
-                  Select-Object -First 1
-
-                if ($candidate) {
-                  Copy-Item -Path (Join-Path $candidate.Directory.FullName "*") -Destination $coreDir -Recurse -Force
-                  return
-                }
-
-                $flatCandidate = Join-Path $BinTarget $exeName
-                if (Test-Path $flatCandidate) {
-                  Copy-Item -Path $flatCandidate -Destination (Join-Path $coreDir $exeName) -Force
-                  return
-                }
-              }
+            if (-not $asset) {
+              throw "No asset matched pattern '$Pattern' for repository '$Repo'"
             }
 
-            Ensure-CoreSubdir -CoreDirName "xray" -ExeNames @("xray.exe")
-            Ensure-CoreSubdir -CoreDirName "sing_box" -ExeNames @("sing-box.exe", "sing-box-client.exe")
+            return [PSCustomObject]@{
+              Tag = $release.tag_name
+              Name = $asset.name
+              Url = $asset.browser_download_url
+            }
           }
 
-          function Add-CoreBin {
+          function Install-CoreFromZip {
             param(
-              [string]$Arch,
-              [string]$OutPath
+              [string]$DownloadUrl,
+              [string]$ZipName,
+              [string]$ExecutableName,
+              [string]$TargetDir
             )
 
-            $zipPath = Join-Path $tmpRoot "v2rayN-$Arch.zip"
-            $extractPath = Join-Path $tmpRoot "extract-$Arch"
-            $urls = @(
-              "https://raw.githubusercontent.com/2dust/v2rayN-core-bin/master/v2rayN-$Arch.zip",
-              "https://raw.githubusercontent.com/2dust/v2rayN-core-bin/main/v2rayN-$Arch.zip",
-              "https://github.com/2dust/v2rayN-core-bin/raw/refs/heads/master/v2rayN-$Arch.zip",
-              "https://github.com/2dust/v2rayN-core-bin/raw/refs/heads/main/v2rayN-$Arch.zip"
-            )
+            $zipPath = Join-Path $tmpRoot $ZipName
+            $extractPath = Join-Path $tmpRoot ([System.IO.Path]::GetFileNameWithoutExtension($ZipName))
 
-            $downloaded = $false
-            foreach ($url in $urls) {
-              try {
-                Invoke-WebRequest -Uri $url -OutFile $zipPath -ErrorAction Stop
-                if ((Get-Item $zipPath).Length -gt 0) {
-                  $downloaded = $true
-                  break
-                }
-              }
-              catch {
-                Write-Host "Failed to download core package from: $url"
-              }
-            }
-
-            if (-not $downloaded) {
-              throw "Failed to download core package for $Arch from all known URLs"
-            }
-
+            Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipPath
             Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
 
-            $binSource = Get-ChildItem -Path $extractPath -Directory -Recurse |
-              Where-Object { $_.Name -eq "bin" } |
+            $exePath = Get-ChildItem -Path $extractPath -File -Recurse |
+              Where-Object { $_.Name -ieq $ExecutableName } |
               Select-Object -First 1
 
-            if (-not $binSource) {
-              throw "bin folder not found in core package for $Arch"
+            if (-not $exePath) {
+              throw "Executable '$ExecutableName' not found in package '$ZipName'"
             }
 
-            $binTarget = Join-Path $OutPath "bin"
-            New-Item -ItemType Directory -Path $binTarget -Force | Out-Null
-            Copy-Item -Path (Join-Path $binSource.FullName "*") -Destination $binTarget -Recurse -Force
-            Ensure-CoreLayout -BinTarget $binTarget
+            New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+            Copy-Item -Path (Join-Path $exePath.Directory.FullName "*") -Destination $TargetDir -Recurse -Force
           }
 
-          Add-CoreBin -Arch "windows-64" -OutPath $env:OutputPath64
+          $xrayAsset = Get-LatestAsset -Repo "XTLS/Xray-core" -Pattern "^Xray-windows-64\\.zip$"
+          $singBoxAsset = Get-LatestAsset -Repo "SagerNet/sing-box" -Pattern "^sing-box-.*-windows-amd64\\.zip$"
+
+          $xrayTarget = Join-Path $env:OutputPath64 "bin\\xray"
+          $singBoxTarget = Join-Path $env:OutputPath64 "bin\\sing_box"
+
+          Install-CoreFromZip -DownloadUrl $xrayAsset.Url -ZipName $xrayAsset.Name -ExecutableName "xray.exe" -TargetDir $xrayTarget
+          Install-CoreFromZip -DownloadUrl $singBoxAsset.Url -ZipName $singBoxAsset.Name -ExecutableName "sing-box.exe" -TargetDir $singBoxTarget
 
       - name: Verify bundled core binaries
         shell: pwsh

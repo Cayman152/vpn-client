@@ -113,11 +113,11 @@ if [[ -f .gitmodules ]]; then
 fi
 
 # Locate project
-PROJECT="v2rayN.Desktop/v2rayN.Desktop.csproj"
+PROJECT="GhostVPN.Desktop/GhostVPN.Desktop.csproj"
 if [[ ! -f "$PROJECT" ]]; then
-  PROJECT="$(find . -maxdepth 3 -name 'v2rayN.Desktop.csproj' | head -n1 || true)"
+  PROJECT="$(find . -maxdepth 3 -name 'GhostVPN.Desktop.csproj' | head -n1 || true)"
 fi
-[[ -f "$PROJECT" ]] || { echo "v2rayN.Desktop.csproj not found"; exit 1; }
+[[ -f "$PROJECT" ]] || { echo "GhostVPN.Desktop.csproj not found"; exit 1; }
 
 # Resolve GUI version & auto checkout
 VERSION=""
@@ -136,7 +136,7 @@ choose_channel() {
   # Print menu to stderr and read from /dev/tty so stdout only carries the token.
   local ch="latest" sel=""
   if [[ -t 0 ]]; then
-    echo "[?] Choose v2rayN release channel:" >&2
+    echo "[?] Choose GhostVPN release channel:" >&2
     echo "    1) Latest (stable)  [default]" >&2
     echo "    2) Pre-release (preview)" >&2
     echo "    3) Keep current (do nothing)" >&2
@@ -158,7 +158,7 @@ choose_channel() {
 
 get_latest_tag_latest() {
   # Resolve /releases/latest → tag_name
-  curl -fsSL "https://api.github.com/repos/2dust/v2rayN/releases/latest" \
+  curl -fsSL "https://api.github.com/repos/2dust/GhostVPN/releases/latest" \
     | grep -Eo '"tag_name":\s*"v?[^"]+"' \
     | head -n1 \
     | sed -E 's/.*"tag_name":\s*"v?([^"]+)".*/\1/'
@@ -167,7 +167,7 @@ get_latest_tag_latest() {
 get_latest_tag_prerelease() {
   # Resolve newest prerelease=true tag; prefer jq, fallback to sed/grep (no awk)
   local json tag
-  json="$(curl -fsSL "https://api.github.com/repos/2dust/v2rayN/releases?per_page=20")" || return 1
+  json="$(curl -fsSL "https://api.github.com/repos/2dust/GhostVPN/releases?per_page=20")" || return 1
 
   # 1) Use jq if present
   if command -v jq >/dev/null 2>&1; then
@@ -218,7 +218,7 @@ git_try_checkout() {
 
 if git rev-parse --git-dir >/dev/null 2>&1; then
   if [[ -n "${VERSION_ARG:-}" ]]; then
-    echo "[*] Trying to switch v2rayN repo to version: ${VERSION_ARG}"
+    echo "[*] Trying to switch GhostVPN repo to version: ${VERSION_ARG}"
     if git_try_checkout "${VERSION_ARG#v}"; then
       VERSION="${VERSION_ARG#v}"
     else
@@ -400,18 +400,18 @@ download_geo_assets() {
   unify_geo_layout "$outroot"
 }
 
-# Prefer the prebuilt v2rayN core bundle; then unify geo layout
-download_v2rayn_bundle() {
+# Prefer the prebuilt GhostVPN core bundle; then unify geo layout
+download_ghostvpn_bundle() {
   local outroot="$1"
   local url=""
   if [[ "$RID_DIR" == "linux-arm64" ]]; then
-    url="https://raw.githubusercontent.com/2dust/v2rayN-core-bin/refs/heads/master/v2rayN-linux-arm64.zip"
+    url="https://raw.githubusercontent.com/2dust/GhostVPN-core-bin/refs/heads/master/GhostVPN-linux-arm64.zip"
   else
-    url="https://raw.githubusercontent.com/2dust/v2rayN-core-bin/refs/heads/master/v2rayN-linux-64.zip"
+    url="https://raw.githubusercontent.com/2dust/GhostVPN-core-bin/refs/heads/master/GhostVPN-linux-64.zip"
   fi
-  echo "[+] Try v2rayN bundle archive: $url"
+  echo "[+] Try GhostVPN bundle archive: $url"
   local tmp zipname
-  tmp="$(mktemp -d)"; zipname="$tmp/v2rayn.zip"
+  tmp="$(mktemp -d)"; zipname="$tmp/ghostvpn.zip"
   curl -fL "$url" -o "$zipname" || { echo "[!] Bundle download failed"; return 1; }
   unzip -q "$zipname" -d "$tmp" || { echo "[!] Bundle unzip failed"; return 1; }
 
@@ -422,11 +422,11 @@ download_v2rayn_bundle() {
     rsync -a "$tmp/" "$outroot/"
   fi
 
-  rm -f "$outroot/v2rayn.zip" 2>/dev/null || true
+  rm -f "$outroot/ghostvpn.zip" 2>/dev/null || true
   find "$outroot" -type d -name "mihomo" -prune -exec rm -rf {} + 2>/dev/null || true
 
   local nested_dir
-  nested_dir="$(find "$outroot" -maxdepth 1 -type d -name 'v2rayN-linux-*' | head -n1 || true)"
+  nested_dir="$(find "$outroot" -maxdepth 1 -type d -name 'GhostVPN-linux-*' | head -n1 || true)"
   if [[ -n "${nested_dir:-}" && -d "$nested_dir/bin" ]]; then
     mkdir -p "$outroot/bin"
     rsync -a "$nested_dir/bin/" "$outroot/bin/"
@@ -477,7 +477,7 @@ build_for_arch() {
   export RID_DIR
 
   # Per-arch working area
-  local PKGROOT="v2rayN-publish"
+  local PKGROOT="GhostVPN-publish"
   local WORKDIR
   WORKDIR="$(mktemp -d)"
   trap '[[ -n "${WORKDIR:-}" ]] && rm -rf "$WORKDIR"' RETURN
@@ -495,16 +495,16 @@ build_for_arch() {
 
   # Optional icon
   local ICON_CANDIDATE
-  ICON_CANDIDATE="$(dirname "$PROJECT")/../v2rayN.Desktop/v2rayN.png"
-  [[ -f "$ICON_CANDIDATE" ]] && cp "$ICON_CANDIDATE" "$WORKDIR/$PKGROOT/v2rayn.png" || true
+  ICON_CANDIDATE="$(dirname "$PROJECT")/../GhostVPN.Desktop/GhostVPN.png"
+  [[ -f "$ICON_CANDIDATE" ]] && cp "$ICON_CANDIDATE" "$WORKDIR/$PKGROOT/ghostvpn.png" || true
 
   # Prepare bin structure
   mkdir -p "$WORKDIR/$PKGROOT/bin/xray" "$WORKDIR/$PKGROOT/bin/sing_box"
 
   # Bundle / cores per-arch
   if [[ "$FORCE_NETCORE" -eq 0 ]]; then
-    if download_v2rayn_bundle "$WORKDIR/$PKGROOT"; then
-      echo "[*] Using v2rayN bundle archive."
+    if download_ghostvpn_bundle "$WORKDIR/$PKGROOT"; then
+      echo "[*] Using GhostVPN bundle archive."
     else
       echo "[*] Bundle failed, fallback to separate core + rules."
       if [[ "$WITH_CORE" == "xray" || "$WITH_CORE" == "both" ]]; then
@@ -531,7 +531,7 @@ build_for_arch() {
   tar -C "$WORKDIR" -czf "$SOURCEDIR/$PKGROOT.tar.gz" "$PKGROOT"
 
   # SPEC
-  local SPECFILE="$SPECDIR/v2rayN.spec"
+  local SPECFILE="$SPECDIR/GhostVPN.spec"
   mkdir -p "$SPECDIR"
   cat > "$SPECFILE" <<'SPEC'
 %global debug_package %{nil}
@@ -540,13 +540,13 @@ build_for_arch() {
 # Ignore outdated LTTng dependencies incorrectly reported by the .NET runtime (to avoid installation failures)
 %global __requires_exclude ^liblttng-ust\.so\..*$
 
-Name:           v2rayN
+Name:           GhostVPN
 Version:        __VERSION__
 Release:        1%{?dist}
-Summary:        v2rayN (Avalonia) GUI client for Linux (x86_64/aarch64)
+Summary:        GhostVPN (Avalonia) GUI client for Linux (x86_64/aarch64)
 License:        GPL-3.0-only
-URL:            https://github.com/2dust/v2rayN
-BugURL:         https://github.com/2dust/v2rayN/issues
+URL:            https://github.com/2dust/GhostVPN
+BugURL:         https://github.com/2dust/GhostVPN/issues
 ExclusiveArch:  aarch64 x86_64
 Source0:        __PKGROOT__.tar.gz
 
@@ -561,11 +561,11 @@ Requires:       bash >= 5.1
 Requires:       freetype >= 2.10
 
 %description
-v2rayN Linux for Red Hat Enterprise Linux
+GhostVPN Linux for Red Hat Enterprise Linux
 Support vless / vmess / Trojan / http / socks / Anytls / Hysteria2 / Shadowsocks / tuic / WireGuard
 Support Red Hat Enterprise Linux / Fedora Linux / Rocky Linux / AlmaLinux / CentOS
 For more information, Please visit our website
-https://github.com/2dust/v2rayN
+https://github.com/2dust/GhostVPN
 
 %prep
 %setup -q -n __PKGROOT__
@@ -574,53 +574,53 @@ https://github.com/2dust/v2rayN
 # no build
 
 %install
-install -dm0755 %{buildroot}/opt/v2rayN
-cp -a * %{buildroot}/opt/v2rayN/
+install -dm0755 %{buildroot}/opt/GhostVPN
+cp -a * %{buildroot}/opt/GhostVPN/
 
 install -dm0755 %{buildroot}%{_sysconfdir}/sudoers.d
-cat > %{buildroot}%{_sysconfdir}/sudoers.d/v2rayn-mihomo-deny << 'EOF'
-ALL ALL=(ALL) !/home/*/.local/share/v2rayN/bin/mihomo/mihomo
+cat > %{buildroot}%{_sysconfdir}/sudoers.d/ghostvpn-mihomo-deny << 'EOF'
+ALL ALL=(ALL) !/home/*/.local/share/GhostVPN/bin/mihomo/mihomo
 EOF
-chmod 0440 %{buildroot}%{_sysconfdir}/sudoers.d/v2rayn-mihomo-deny
+chmod 0440 %{buildroot}%{_sysconfdir}/sudoers.d/ghostvpn-mihomo-deny
 
 # Launcher (prefer native ELF first, then DLL fallback)
 install -dm0755 %{buildroot}%{_bindir}
-cat > %{buildroot}%{_bindir}/v2rayn << 'EOF'
+cat > %{buildroot}%{_bindir}/ghostvpn << 'EOF'
 #!/usr/bin/bash
 set -euo pipefail
-DIR="/opt/v2rayN"
+DIR="/opt/GhostVPN"
 
 # Prefer native apphost
-if [[ -x "$DIR/v2rayN" ]]; then exec "$DIR/v2rayN" "$@"; fi
+if [[ -x "$DIR/GhostVPN" ]]; then exec "$DIR/GhostVPN" "$@"; fi
 
 # DLL fallback
-for dll in v2rayN.Desktop.dll v2rayN.dll; do
+for dll in GhostVPN.Desktop.dll GhostVPN.dll; do
   if [[ -f "$DIR/$dll" ]]; then exec /usr/bin/dotnet "$DIR/$dll" "$@"; fi
 done
 
-echo "v2rayN launcher: no executable found in $DIR" >&2
+echo "GhostVPN launcher: no executable found in $DIR" >&2
 ls -l "$DIR" >&2 || true
 exit 1
 EOF
-chmod 0755 %{buildroot}%{_bindir}/v2rayn
+chmod 0755 %{buildroot}%{_bindir}/ghostvpn
 
 # Desktop file
 install -dm0755 %{buildroot}%{_datadir}/applications
-cat > %{buildroot}%{_datadir}/applications/v2rayn.desktop << 'EOF'
+cat > %{buildroot}%{_datadir}/applications/ghostvpn.desktop << 'EOF'
 [Desktop Entry]
 Type=Application
-Name=v2rayN
-Comment=v2rayN for Red Hat Enterprise Linux
-Exec=v2rayn
-Icon=v2rayn
+Name=GhostVPN
+Comment=GhostVPN for Red Hat Enterprise Linux
+Exec=ghostvpn
+Icon=ghostvpn
 Terminal=false
 Categories=Network;
 EOF
 
 # Icon
-if [ -f "%{_builddir}/__PKGROOT__/v2rayn.png" ]; then
+if [ -f "%{_builddir}/__PKGROOT__/ghostvpn.png" ]; then
   install -dm0755 %{buildroot}%{_datadir}/icons/hicolor/256x256/apps
-  install -m0644 %{_builddir}/__PKGROOT__/v2rayn.png %{buildroot}%{_datadir}/icons/hicolor/256x256/apps/v2rayn.png
+  install -m0644 %{_builddir}/__PKGROOT__/ghostvpn.png %{buildroot}%{_datadir}/icons/hicolor/256x256/apps/ghostvpn.png
 fi
 
 %post
@@ -632,11 +632,11 @@ fi
 /usr/bin/gtk-update-icon-cache -f %{_datadir}/icons/hicolor >/dev/null 2>&1 || true
 
 %files
-%{_bindir}/v2rayn
-/opt/v2rayN
-%{_datadir}/applications/v2rayn.desktop
-%{_datadir}/icons/hicolor/256x256/apps/v2rayn.png
-%config(noreplace) /etc/sudoers.d/v2rayn-mihomo-deny
+%{_bindir}/ghostvpn
+/opt/GhostVPN
+%{_datadir}/applications/ghostvpn.desktop
+%{_datadir}/icons/hicolor/256x256/apps/ghostvpn.png
+%config(noreplace) /etc/sudoers.d/ghostvpn-mihomo-deny
 SPEC
 
   # Autostart injection (inside %install) and %files entry
@@ -646,11 +646,11 @@ SPEC
       /^%post$/ && !ins {
         print "# --- Autostart (.desktop) ---"
         print "install -dm0755 %{buildroot}/etc/xdg/autostart"
-        print "cat > %{buildroot}/etc/xdg/autostart/v2rayn.desktop << '\''EOF'\''"
+        print "cat > %{buildroot}/etc/xdg/autostart/ghostvpn.desktop << '\''EOF'\''"
         print "[Desktop Entry]"
         print "Type=Application"
-        print "Name=v2rayN (Autostart)"
-        print "Exec=v2rayn"
+        print "Name=GhostVPN (Autostart)"
+        print "Exec=ghostvpn"
         print "X-GNOME-Autostart-enabled=true"
         print "NoDisplay=false"
         print "EOF"
@@ -662,9 +662,9 @@ SPEC
     awk '
       BEGIN{infiles=0; done=0}
       /^%files$/        {infiles=1}
-      infiles && done==0 && $0 ~ /%{_datadir}\/icons\/hicolor\/256x256\/apps\/v2rayn\.png/ {
+      infiles && done==0 && $0 ~ /%{_datadir}\/icons\/hicolor\/256x256\/apps\/ghostvpn\.png/ {
         print
-        print "%config(noreplace) /etc/xdg/autostart/v2rayn.desktop"
+        print "%config(noreplace) /etc/xdg/autostart/ghostvpn.desktop"
         done=1
         next
       }
@@ -681,7 +681,7 @@ SPEC
 
   echo "Build done for $short. RPM at:"
   local f
-  for f in "${TOPDIR}/RPMS/${archdir}/v2rayN-${VERSION}-1"*.rpm; do
+  for f in "${TOPDIR}/RPMS/${archdir}/GhostVPN-${VERSION}-1"*.rpm; do
     [[ -e "$f" ]] || continue
     echo "  $f"
     BUILT_RPMS+=("$f")
