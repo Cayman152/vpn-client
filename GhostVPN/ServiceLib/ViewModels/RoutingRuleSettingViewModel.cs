@@ -249,6 +249,7 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
         var ret = await AddBatchRoutingRulesAsync(SelectedRouting, presetRules);
         if (ret == 0)
         {
+            EnsureRoutingRemarks(GetPresetDisplayName(resourceName));
             RefreshRulesItems();
             NoticeManager.Instance.Enqueue(ResUI.OperationSuccess);
         }
@@ -276,12 +277,8 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
 
     private async Task SaveRoutingAsync()
     {
-        var remarks = SelectedRouting.Remarks;
-        if (remarks.IsNullOrEmpty())
-        {
-            NoticeManager.Instance.Enqueue(ResUI.PleaseFillRemarks);
-            return;
-        }
+        EnsureRoutingRemarks();
+
         var item = SelectedRouting;
         foreach (var it in _rules)
         {
@@ -300,6 +297,35 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
             NoticeManager.Instance.Enqueue(ResUI.OperationFailed);
         }
     }
+
+    private void EnsureRoutingRemarks(string? preferredName = null)
+    {
+        var currentName = SelectedRouting.Remarks?.Trim();
+        if (!string.IsNullOrEmpty(currentName))
+        {
+            SelectedRouting.Remarks = currentName;
+            return;
+        }
+
+        var fallbackName = preferredName?.Trim();
+        if (string.IsNullOrEmpty(fallbackName))
+        {
+            fallbackName = $"Набор правил {DateTime.Now:MM-dd HH:mm}";
+        }
+
+        SelectedRouting.Remarks = fallbackName;
+    }
+
+    private static string? GetPresetDisplayName(string resourceName) =>
+        resourceName switch
+        {
+            Global.DirectTemplateCinemaFileName => "Direct: Онлайн-кинотеатры",
+            Global.DirectTemplateBanksFileName => "Direct: Банки",
+            Global.DirectTemplateProvidersFileName => "Direct: Провайдеры",
+            Global.DirectTemplateGtaVFileName => "Direct: GTA V",
+            Global.ProxyTemplateDiscordFileName => "Proxy: Discord",
+            _ => null
+        };
 
     #region Import rules
 
