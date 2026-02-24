@@ -17,9 +17,6 @@ public class RoutingRuleDetailsViewModel : MyReactiveObject
     [Reactive]
     public string? RuleType { get; set; }
 
-    [Reactive]
-    public bool AutoSort { get; set; }
-
     public ReactiveCommand<Unit, Unit> SaveCmd { get; }
 
     public RoutingRuleDetailsViewModel(RulesItem rulesItem, Func<EViewAction, object?, Task<bool>>? updateView)
@@ -63,18 +60,9 @@ public class RoutingRuleDetailsViewModel : MyReactiveObject
         IP = Utils.Convert2Comma(IP);
         Process = Utils.Convert2Comma(Process);
 
-        if (AutoSort)
-        {
-            SelectedSource.Domain = Utils.String2ListSorted(Domain);
-            SelectedSource.Ip = Utils.String2ListSorted(IP);
-            SelectedSource.Process = Utils.String2ListSorted(Process);
-        }
-        else
-        {
-            SelectedSource.Domain = Utils.String2List(Domain);
-            SelectedSource.Ip = Utils.String2List(IP);
-            SelectedSource.Process = Utils.String2List(Process);
-        }
+        SelectedSource.Domain = Utils.String2List(Domain);
+        SelectedSource.Ip = Utils.String2List(IP);
+        SelectedSource.Process = Utils.String2List(Process);
         SelectedSource.Enabled = true;
         SelectedSource.Port = null;
         SelectedSource.Network = null;
