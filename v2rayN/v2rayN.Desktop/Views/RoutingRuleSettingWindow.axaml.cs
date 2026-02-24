@@ -35,6 +35,7 @@ public partial class RoutingRuleSettingWindow : WindowBase<RoutingRuleSettingVie
             this.BindCommand(ViewModel, vm => vm.AddDirectCinemaPresetCmd, v => v.menuDirectPresetCinema).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddDirectBanksPresetCmd, v => v.menuDirectPresetBanks).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddDirectProvidersPresetCmd, v => v.menuDirectPresetProviders).DisposeWith(disposables);
+            this.BindCommand(ViewModel, vm => vm.AddDirectGtaVPresetCmd, v => v.menuDirectPresetGtaV).DisposeWith(disposables);
 
             this.BindCommand(ViewModel, vm => vm.RuleAddCmd, v => v.menuRuleAdd2).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RuleRemoveCmd, v => v.menuRuleRemove).DisposeWith(disposables);

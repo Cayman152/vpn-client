@@ -22,6 +22,7 @@
                 <MenuItem x:Name="menuDirectPresetCinema" Header="Онлайн-кинотеатры" />
                 <MenuItem x:Name="menuDirectPresetBanks" Header="Банки" />
                 <MenuItem x:Name="menuDirectPresetProviders" Header="Провайдеры" />
+                <MenuItem x:Name="menuDirectPresetGtaV" Header="GTA V" />
             </MenuItem>
         </Menu>
 

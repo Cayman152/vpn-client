@@ -22,6 +22,7 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
     public ReactiveCommand<Unit, Unit> AddDirectCinemaPresetCmd { get; }
     public ReactiveCommand<Unit, Unit> AddDirectBanksPresetCmd { get; }
     public ReactiveCommand<Unit, Unit> AddDirectProvidersPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectGtaVPresetCmd { get; }
     public ReactiveCommand<Unit, Unit> RuleRemoveCmd { get; }
     public ReactiveCommand<Unit, Unit> RuleExportSelectedCmd { get; }
     public ReactiveCommand<Unit, Unit> MoveTopCmd { get; }
@@ -71,6 +72,10 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
         AddDirectProvidersPresetCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             await AddDirectPresetAsync(Global.DirectTemplateProvidersFileName);
+        });
+        AddDirectGtaVPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddDirectPresetAsync(Global.DirectTemplateGtaVFileName);
         });
 
         RuleRemoveCmd = ReactiveCommand.CreateFromTask(async () =>

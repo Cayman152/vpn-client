@@ -44,6 +44,7 @@ public class Global
     public const string DirectTemplateCinemaFileName = NamespaceSample + "direct_template_cinema";
     public const string DirectTemplateBanksFileName = NamespaceSample + "direct_template_banks";
     public const string DirectTemplateProvidersFileName = NamespaceSample + "direct_template_providers";
+    public const string DirectTemplateGtaVFileName = NamespaceSample + "direct_template_gtav";
 
     public const string DefaultSecurity = "auto";
     public const string DefaultNetwork = "tcp";
