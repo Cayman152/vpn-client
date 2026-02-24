@@ -379,7 +379,8 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
         }
         else
         {
-            _rules.AddRange(lstRules);
+            // New rules should have higher priority, so prepend them.
+            _rules.InsertRange(0, lstRules);
         }
         return 0;
     }
