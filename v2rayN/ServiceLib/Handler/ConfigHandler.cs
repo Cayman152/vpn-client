@@ -8,6 +8,9 @@ public static class ConfigHandler
     private static readonly string _tag = "ConfigHandler";
     private static readonly Dictionary<string, string> _ghostRoutingLocalizationMap = new()
     {
+        { "V4-Белый список (Whitelist)", "Белый список (Whitelist)" },
+        { "V4-Черный список (Blacklist)", "Черный список (Blacklist)" },
+        { "V4-Глобальный режим (Global)", "Глобальный режим (Global)" },
         { "绕过大陆(Whitelist)", "Белый список (Whitelist)" },
         { "黑名单(Blacklist)", "Черный список (Blacklist)" },
         { "全局(Global)", "Глобальный режим (Global)" },
@@ -2082,7 +2085,9 @@ public static class ConfigHandler
     /// <returns>0 if successful</returns>
     public static async Task<int> InitBuiltinRouting(Config config, bool blImportAdvancedRules = false)
     {
-        var ver = "V4-";
+        var ghostWhitelistName = "Белый список (Whitelist)";
+        var ghostBlacklistName = "Черный список (Blacklist)";
+        var ghostGlobalName = "Глобальный режим (Global)";
         var items = await AppManager.Instance.RoutingItems();
 
         //TODO Temporary code to be removed later
@@ -2093,7 +2098,7 @@ public static class ConfigHandler
             items = await AppManager.Instance.RoutingItems();
         }
 
-        if (!blImportAdvancedRules && items.Count(u => u.Remarks.StartsWith(ver)) > 0)
+        if (!blImportAdvancedRules && items.Any(u => IsGhostRoutingModeRemark(u.Remarks)))
         {
             //migrate
             //TODO Temporary code to be removed later
@@ -2115,7 +2120,7 @@ public static class ConfigHandler
         //Bypass the mainland
         var item2 = new RoutingItem()
         {
-            Remarks = $"{ver}Белый список (Whitelist)",
+            Remarks = ghostWhitelistName,
             Url = string.Empty,
             Sort = maxSort + 1,
         };
@@ -2124,7 +2129,7 @@ public static class ConfigHandler
         //Blacklist
         var item3 = new RoutingItem()
         {
-            Remarks = $"{ver}Черный список (Blacklist)",
+            Remarks = ghostBlacklistName,
             Url = string.Empty,
             Sort = maxSort + 2,
         };
@@ -2133,7 +2138,7 @@ public static class ConfigHandler
         //Global
         var item1 = new RoutingItem()
         {
-            Remarks = $"{ver}Глобальный режим (Global)",
+            Remarks = ghostGlobalName,
             Url = string.Empty,
             Sort = maxSort + 3,
         };
@@ -2144,6 +2149,19 @@ public static class ConfigHandler
             await SetDefaultRouting(config, item1);
         }
         return 0;
+    }
+
+    private static bool IsGhostRoutingModeRemark(string? text)
+    {
+        if (text.IsNullOrEmpty())
+        {
+            return false;
+        }
+
+        var normalized = LocalizeGhostRoutingText(text);
+        return normalized is "Белый список (Whitelist)"
+            or "Черный список (Blacklist)"
+            or "Глобальный режим (Global)";
     }
 
     private static async Task LocalizeGhostRoutingItems(List<RoutingItem> items)
@@ -2196,6 +2214,14 @@ public static class ConfigHandler
         foreach (var (source, target) in _ghostRoutingLocalizationMap)
         {
             localized = localized.Replace(source, target, StringComparison.Ordinal);
+        }
+
+        if (localized.StartsWith("V4-", StringComparison.Ordinal)
+            && (localized.Contains("(Whitelist)", StringComparison.Ordinal)
+                || localized.Contains("(Blacklist)", StringComparison.Ordinal)
+                || localized.Contains("(Global)", StringComparison.Ordinal)))
+        {
+            localized = localized[3..];
         }
 
         return localized;
