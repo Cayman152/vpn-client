@@ -25,16 +25,6 @@
                 VerticalAlignment="Center"
                 ClipToBounds="True"
                 Style="{StaticResource MaterialDesignToolBar}">
-                <Button x:Name="menuRuleAdd">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon
-                            Margin="{StaticResource MarginRight8}"
-                            VerticalAlignment="Center"
-                            Kind="Plus" />
-                        <TextBlock Style="{StaticResource ToolbarTextBlock}" Text="{x:Static resx:ResUI.menuRuleAdd}" />
-                    </StackPanel>
-                </Button>
-                <Separator />
                 <Button x:Name="menuImportRulesFromFile">
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon
@@ -256,10 +246,6 @@
                     Style="{StaticResource DefDataGrid}">
                     <DataGrid.ContextMenu>
                         <ContextMenu Style="{StaticResource DefContextMenu}">
-                            <MenuItem
-                                x:Name="menuRuleAdd2"
-                                Height="{StaticResource MenuItemHeight}"
-                                Header="{x:Static resx:ResUI.menuRuleAdd}" />
                             <MenuItem
                                 x:Name="menuRuleRemove"
                                 Height="{StaticResource MenuItemHeight}"

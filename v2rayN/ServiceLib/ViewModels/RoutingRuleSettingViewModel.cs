@@ -14,7 +14,6 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
 
     public IList<RulesItemModel> SelectedSources { get; set; }
 
-    public ReactiveCommand<Unit, Unit> RuleAddCmd { get; }
     public ReactiveCommand<Unit, Unit> ImportRulesFromFileCmd { get; }
     public ReactiveCommand<Unit, Unit> ImportRulesFromClipboardCmd { get; }
     public ReactiveCommand<Unit, Unit> ImportRulesFromUrlCmd { get; }
@@ -42,10 +41,6 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
             x => x.SelectedSource,
             selectedSource => selectedSource != null && !selectedSource.OutboundTag.IsNullOrEmpty());
 
-        RuleAddCmd = ReactiveCommand.CreateFromTask(async () =>
-        {
-            await RuleEditAsync(true);
-        });
         ImportRulesFromFileCmd = ReactiveCommand.CreateFromTask(async () =>
         {
             await _updateView?.Invoke(EViewAction.ImportRulesFromFile, null);

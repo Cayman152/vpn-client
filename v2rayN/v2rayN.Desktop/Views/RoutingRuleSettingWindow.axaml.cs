@@ -29,7 +29,6 @@ public partial class RoutingRuleSettingWindow : WindowBase<RoutingRuleSettingVie
             this.OneWayBind(ViewModel, vm => vm.RulesItems, v => v.lstRules.ItemsSource).DisposeWith(disposables);
             this.Bind(ViewModel, vm => vm.SelectedSource, v => v.lstRules.SelectedItem).DisposeWith(disposables);
 
-            this.BindCommand(ViewModel, vm => vm.RuleAddCmd, v => v.menuRuleAdd).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.ImportRulesFromFileCmd, v => v.menuImportRulesFromFile).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.ExportRulesToJsonCmd, v => v.menuExportRulesToJson).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddDirectCinemaPresetCmd, v => v.menuDirectPresetCinema).DisposeWith(disposables);
@@ -38,7 +37,6 @@ public partial class RoutingRuleSettingWindow : WindowBase<RoutingRuleSettingVie
             this.BindCommand(ViewModel, vm => vm.AddDirectGtaVPresetCmd, v => v.menuDirectPresetGtaV).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.AddProxyDiscordPresetCmd, v => v.menuProxyPresetDiscord).DisposeWith(disposables);
 
-            this.BindCommand(ViewModel, vm => vm.RuleAddCmd, v => v.menuRuleAdd2).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RuleRemoveCmd, v => v.menuRuleRemove).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.RuleExportSelectedCmd, v => v.menuRuleExportSelected).DisposeWith(disposables);
             this.BindCommand(ViewModel, vm => vm.MoveTopCmd, v => v.menuMoveTop).DisposeWith(disposables);

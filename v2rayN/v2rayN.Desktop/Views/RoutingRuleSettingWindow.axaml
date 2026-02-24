@@ -15,7 +15,6 @@
     mc:Ignorable="d">
     <DockPanel>
         <Menu Margin="{StaticResource Margin4}" DockPanel.Dock="Top">
-            <MenuItem x:Name="menuRuleAdd" Header="{x:Static resx:ResUI.menuRuleAdd}" />
             <MenuItem x:Name="menuImportRulesFromFile" Header="Импорт правил из JSON-файла" />
             <MenuItem x:Name="menuExportRulesToJson" Header="Экспорт правил в JSON" />
             <MenuItem Header="Шаблоны Direct">
@@ -64,7 +63,6 @@
                     </DataGrid.KeyBindings>
                     <DataGrid.ContextMenu>
                         <ContextMenu>
-                            <MenuItem x:Name="menuRuleAdd2" Header="{x:Static resx:ResUI.menuRuleAdd}" />
                             <MenuItem
                                 x:Name="menuRuleRemove"
                                 Header="{x:Static resx:ResUI.menuRuleRemove}"
