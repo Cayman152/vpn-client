@@ -23,6 +23,7 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
     public ReactiveCommand<Unit, Unit> AddDirectBanksPresetCmd { get; }
     public ReactiveCommand<Unit, Unit> AddDirectProvidersPresetCmd { get; }
     public ReactiveCommand<Unit, Unit> AddDirectGtaVPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddProxyDiscordPresetCmd { get; }
     public ReactiveCommand<Unit, Unit> RuleRemoveCmd { get; }
     public ReactiveCommand<Unit, Unit> RuleExportSelectedCmd { get; }
     public ReactiveCommand<Unit, Unit> MoveTopCmd { get; }
@@ -63,19 +64,23 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
         });
         AddDirectCinemaPresetCmd = ReactiveCommand.CreateFromTask(async () =>
         {
-            await AddDirectPresetAsync(Global.DirectTemplateCinemaFileName);
+            await AddPresetAsync(Global.DirectTemplateCinemaFileName);
         });
         AddDirectBanksPresetCmd = ReactiveCommand.CreateFromTask(async () =>
         {
-            await AddDirectPresetAsync(Global.DirectTemplateBanksFileName);
+            await AddPresetAsync(Global.DirectTemplateBanksFileName);
         });
         AddDirectProvidersPresetCmd = ReactiveCommand.CreateFromTask(async () =>
         {
-            await AddDirectPresetAsync(Global.DirectTemplateProvidersFileName);
+            await AddPresetAsync(Global.DirectTemplateProvidersFileName);
         });
         AddDirectGtaVPresetCmd = ReactiveCommand.CreateFromTask(async () =>
         {
-            await AddDirectPresetAsync(Global.DirectTemplateGtaVFileName);
+            await AddPresetAsync(Global.DirectTemplateGtaVFileName);
+        });
+        AddProxyDiscordPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddPresetAsync(Global.ProxyTemplateDiscordFileName);
         });
 
         RuleRemoveCmd = ReactiveCommand.CreateFromTask(async () =>
@@ -237,7 +242,7 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
         await _updateView?.Invoke(EViewAction.ExportRoutingRulesToFile, JsonUtils.Serialize(exportRules, options));
     }
 
-    private async Task AddDirectPresetAsync(string resourceName)
+    private async Task AddPresetAsync(string resourceName)
     {
         var presetRules = EmbedUtils.GetEmbedText(resourceName);
         if (presetRules.IsNullOrEmpty())

@@ -24,6 +24,9 @@
                 <MenuItem x:Name="menuDirectPresetProviders" Header="Провайдеры" />
                 <MenuItem x:Name="menuDirectPresetGtaV" Header="GTA V" />
             </MenuItem>
+            <MenuItem Header="Шаблоны Proxy">
+                <MenuItem x:Name="menuProxyPresetDiscord" Header="Discord" />
+            </MenuItem>
         </Menu>
 
         <StackPanel

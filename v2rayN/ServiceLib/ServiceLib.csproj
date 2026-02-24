@@ -30,6 +30,7 @@
 		<EmbeddedResource Include="Sample\direct_template_banks" />
 		<EmbeddedResource Include="Sample\direct_template_providers" />
 		<EmbeddedResource Include="Sample\direct_template_gtav" />
+		<EmbeddedResource Include="Sample\proxy_template_discord" />
 		<EmbeddedResource Include="Sample\dns_singbox_normal" />
 		<EmbeddedResource Include="Sample\dns_v2ray_normal" />
 		<EmbeddedResource Include="Sample\kill_as_sudo_linux_sh" />

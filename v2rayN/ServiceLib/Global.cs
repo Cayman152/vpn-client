@@ -45,6 +45,7 @@ public class Global
     public const string DirectTemplateBanksFileName = NamespaceSample + "direct_template_banks";
     public const string DirectTemplateProvidersFileName = NamespaceSample + "direct_template_providers";
     public const string DirectTemplateGtaVFileName = NamespaceSample + "direct_template_gtav";
+    public const string ProxyTemplateDiscordFileName = NamespaceSample + "proxy_template_discord";
 
     public const string DefaultSecurity = "auto";
     public const string DefaultNetwork = "tcp";
