@@ -1,6 +1,9 @@
 name: Ghost VPN Windows Build
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       release_tag:
