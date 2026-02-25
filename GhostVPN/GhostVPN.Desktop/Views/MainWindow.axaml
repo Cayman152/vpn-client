@@ -11,103 +11,159 @@
     Title="Ghost VPN"
     Width="1200"
     Height="800"
-    MinWidth="600"
+    MinWidth="700"
     x:DataType="vms:MainWindowViewModel"
     Icon="/Assets/NotifyIcon1.ico"
     ShowInTaskbar="True"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <dialogHost:DialogHost
-        Background="Gray"
+        Background="{DynamicResource GhostBackgroundBrush}"
         CloseOnClickAway="True"
         DisableOpeningAnimation="True">
-        <DockPanel>
-            <DockPanel Margin="{StaticResource Margin8}" DockPanel.Dock="Top">
-                <Menu Margin="{StaticResource Margin4}">
-                    <MenuItem Header="{x:Static resx:ResUI.menuSetting}">
-                        <MenuItem x:Name="menuBackupAndRestore" Header="{x:Static resx:ResUI.menuBackupAndRestore}" />
-                    </MenuItem>
-
-                    <MenuItem x:Name="menuReload" Header="{x:Static resx:ResUI.menuReload}" />
-                </Menu>
-            </DockPanel>
-
+        <Grid
+            Margin="14"
+            RowDefinitions="Auto,Auto,Auto,*"
+            RowSpacing="12">
             <Border
-                Margin="{StaticResource Margin8}"
-                Padding="{StaticResource Margin8}"
-                DockPanel.Dock="Top">
-                <WrapPanel VerticalAlignment="Center">
-                    <StackPanel
-                        Margin="{StaticResource Margin4}"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal">
+                Grid.Row="0"
+                Classes="GhostCard"
+                Padding="14">
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
                         <Image
-                            Width="36"
-                            Height="36"
-                            Margin="{StaticResource Margin4}"
+                            Width="50"
+                            Height="50"
                             Source="/Assets/ghostvpn-logo.png" />
-                        <TextBlock
-                            Margin="{StaticResource Margin4}"
-                            VerticalAlignment="Center"
-                            FontSize="18"
-                            FontWeight="Bold"
-                            Foreground="#53B3FF"
-                            Text="Ghost VPN" />
+                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Classes="GhostTitle" Text="Ghost VPN" />
+                            <TextBlock Classes="GhostSubtitle" Text="Приватный клиент с точечной маршрутизацией" />
+                        </StackPanel>
                     </StackPanel>
-                    <Button
-                        x:Name="btnAddServerFromClipboard"
-                        Margin="{StaticResource Margin4}"
-                        Classes="Large Success"
-                        Content="Добавить сервер из буфера" />
-                    <Button
-                        x:Name="btnToggleVpn"
-                        Margin="{StaticResource Margin4}"
-                        Classes="Large Success"
-                        Content="{Binding VpnToggleButtonText}" />
-                    <Button
-                        x:Name="btnRoutingRules"
-                        Margin="{StaticResource Margin4}"
-                        Classes="Large"
-                        Content="Правила маршрутизации" />
-                </WrapPanel>
+
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            x:Name="menuBackupAndRestore"
+                            Classes="SecondaryAction"
+                            Content="Резервная копия" />
+                        <Button
+                            x:Name="menuReload"
+                            Classes="PrimaryAction"
+                            Content="Перезагрузка" />
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <view:StatusBarView DockPanel.Dock="Bottom" />
+            <Border
+                Grid.Row="1"
+                Classes="GhostHeroCard"
+                Padding="18">
+                <Grid
+                    ColumnDefinitions="2*,Auto,2*"
+                    ColumnSpacing="18">
+                    <StackPanel
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Spacing="6">
+                        <TextBlock Classes="GhostTitle" Text="Безопасное подключение в 1 клик" />
+                        <TextBlock
+                            Classes="GhostSubtitle"
+                            Text="Клиент в стиле Hiddify: чистый интерфейс, быстрый доступ к серверу и правилам." />
+                        <Border
+                            Classes="GhostBadge"
+                            Padding="12,6"
+                            HorizontalAlignment="Left">
+                            <TextBlock Classes="GhostMicroLabel" Text="VLESS • Xray • sing-box" />
+                        </Border>
+                        <Border
+                            Classes="GhostBadge"
+                            Padding="12,6"
+                            HorizontalAlignment="Left">
+                            <TextBlock Classes="GhostMicroLabel" Text="{Binding VpnToggleButtonText}" />
+                        </Border>
+                    </StackPanel>
 
-            <Grid>
-                <Grid
-                    x:Name="gridMain"
-                    ColumnDefinitions="1*,10,1*"
-                    IsVisible="False">
-                    <ContentControl x:Name="tabProfiles" Grid.Column="0" />
-                    <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" />
-                    <TabControl
-                        x:Name="tabMain"
+                    <StackPanel
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+                        <Button
+                            x:Name="btnToggleVpn"
+                            Classes="ConnectToggle"
+                            Content="{Binding VpnToggleButtonText}" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            Classes="GhostMicroLabel"
+                            Text="Главный переключатель VPN" />
+                    </StackPanel>
+
+                    <StackPanel
                         Grid.Column="2"
-                        HorizontalContentAlignment="Left">
-                        <TabItem x:Name="tabMsgView" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
-                    </TabControl>
+                        VerticalAlignment="Center"
+                        Spacing="10">
+                        <Button
+                            x:Name="btnAddServerFromClipboard"
+                            Classes="PrimaryAction"
+                            Content="Импорт сервера из буфера" />
+                        <Button
+                            x:Name="btnRoutingRules"
+                            Classes="SecondaryAction"
+                            Content="Правила маршрутизации" />
+                    </StackPanel>
                 </Grid>
-                <Grid
-                    x:Name="gridMain1"
-                    IsVisible="False"
-                    RowDefinitions="1*,10,1*">
-                    <ContentControl x:Name="tabProfiles1" Grid.Row="0" />
-                    <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
-                    <TabControl
-                        x:Name="tabMain1"
-                        Grid.Row="2"
-                        TabStripPlacement="Left">
-                        <TabItem x:Name="tabMsgView1" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
-                    </TabControl>
+            </Border>
+
+            <Border
+                Grid.Row="2"
+                Classes="GhostShellCard"
+                Padding="4">
+                <view:StatusBarView />
+            </Border>
+
+            <Border
+                Grid.Row="3"
+                Classes="GhostCard"
+                Padding="6">
+                <Grid>
+                    <Grid
+                        x:Name="gridMain"
+                        ColumnDefinitions="1*,10,1*"
+                        IsVisible="False">
+                        <ContentControl x:Name="tabProfiles" Grid.Column="0" />
+                        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" />
+                        <TabControl
+                            x:Name="tabMain"
+                            Grid.Column="2"
+                            HorizontalContentAlignment="Left">
+                            <TabItem x:Name="tabMsgView" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
+                        </TabControl>
+                    </Grid>
+                    <Grid
+                        x:Name="gridMain1"
+                        IsVisible="False"
+                        RowDefinitions="1*,10,1*">
+                        <ContentControl x:Name="tabProfiles1" Grid.Row="0" />
+                        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
+                        <TabControl
+                            x:Name="tabMain1"
+                            Grid.Row="2"
+                            TabStripPlacement="Left">
+                            <TabItem x:Name="tabMsgView1" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
+                        </TabControl>
+                    </Grid>
+                    <Grid x:Name="gridMain2" IsVisible="False">
+                        <TabControl x:Name="tabMain2" TabStripPlacement="Left">
+                            <TabItem x:Name="tabProfiles2" Header="{x:Static resx:ResUI.menuServers}" />
+                            <TabItem x:Name="tabMsgView2" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
+                        </TabControl>
+                    </Grid>
                 </Grid>
-                <Grid x:Name="gridMain2" IsVisible="False">
-                    <TabControl x:Name="tabMain2" TabStripPlacement="Left">
-                        <TabItem x:Name="tabProfiles2" Header="{x:Static resx:ResUI.menuServers}" />
-                        <TabItem x:Name="tabMsgView2" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
-                    </TabControl>
-                </Grid>
-            </Grid>
-        </DockPanel>
+            </Border>
+        </Grid>
     </dialogHost:DialogHost>
 </Window>

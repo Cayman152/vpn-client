@@ -5,35 +5,64 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="140"
+    d:DesignWidth="1000"
     x:DataType="vms:StatusBarViewModel"
     mc:Ignorable="d">
-    <Grid>
-        <DockPanel Margin="{StaticResource Margin8}">
-            <StackPanel
-                VerticalAlignment="Center"
-                Margin="{StaticResource MarginLr8}"
-                DockPanel.Dock="Right">
-                <TextBlock x:Name="txtSpeedProxyDisplay" HorizontalAlignment="Right" />
-                <Border Margin="1" />
-                <TextBlock x:Name="txtSpeedDirectDisplay" HorizontalAlignment="Right" />
+    <Grid
+        ColumnDefinitions="1.2*,1.6*,1.2*"
+        ColumnSpacing="8">
+        <Border
+            Grid.Column="0"
+            Classes="GhostMetricCard"
+            Padding="10">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="GhostMicroLabel" Text="Локальный вход" />
+                <TextBlock
+                    x:Name="txtInboundDisplay"
+                    FontSize="14"
+                    FontWeight="SemiBold" />
+                <TextBlock
+                    x:Name="txtInboundLanDisplay"
+                    Classes="GhostSubtitle"
+                    FontSize="12" />
             </StackPanel>
+        </Border>
 
-            <StackPanel
-                VerticalAlignment="Center"
-                Margin="{StaticResource MarginLr8}"
-                DockPanel.Dock="Left">
-                <TextBlock x:Name="txtInboundDisplay" />
-                <Border Margin="1" />
-                <TextBlock x:Name="txtInboundLanDisplay" />
+        <Border
+            Grid.Column="1"
+            Classes="GhostMetricCard"
+            Padding="10">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="GhostMicroLabel" Text="Текущий сервер" />
+                <TextBlock
+                    x:Name="txtRunningServerDisplay"
+                    FontSize="14"
+                    FontWeight="SemiBold" />
+                <TextBlock
+                    x:Name="txtRunningInfoDisplay"
+                    Classes="GhostSubtitle"
+                    FontSize="12" />
             </StackPanel>
+        </Border>
 
-            <StackPanel VerticalAlignment="Center" Margin="{StaticResource MarginLr8}">
-                <TextBlock x:Name="txtRunningServerDisplay" />
-                <Border Margin="1" />
-                <TextBlock x:Name="txtRunningInfoDisplay" />
+        <Border
+            Grid.Column="2"
+            Classes="GhostMetricCard"
+            Padding="10">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="GhostMicroLabel" Text="Скорость" />
+                <TextBlock
+                    x:Name="txtSpeedProxyDisplay"
+                    HorizontalAlignment="Left"
+                    FontSize="14"
+                    FontWeight="SemiBold" />
+                <TextBlock
+                    x:Name="txtSpeedDirectDisplay"
+                    Classes="GhostSubtitle"
+                    HorizontalAlignment="Left"
+                    FontSize="12" />
             </StackPanel>
-        </DockPanel>
+        </Border>
     </Grid>
 </UserControl>
