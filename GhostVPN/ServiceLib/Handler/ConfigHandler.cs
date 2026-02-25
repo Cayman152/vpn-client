@@ -49,17 +49,21 @@ public static class ConfigHandler
     public static Config? LoadConfig()
     {
         Config? config = null;
-        var result = EmbedUtils.LoadResource(Utils.GetConfigPath(_configRes));
+        var configPath = Utils.GetConfigPath(_configRes);
+        var result = EmbedUtils.LoadResource(configPath);
         if (result.IsNotEmpty())
         {
             config = JsonUtils.Deserialize<Config>(result);
+            if (config is null)
+            {
+                BackupInvalidConfig(configPath, "invalid json");
+            }
         }
         else
         {
-            if (File.Exists(Utils.GetConfigPath(_configRes)))
+            if (File.Exists(configPath))
             {
-                Logging.SaveLog("LoadConfig Exception");
-                return null;
+                BackupInvalidConfig(configPath, "unreadable config");
             }
         }
 
@@ -199,6 +203,20 @@ public static class ConfigHandler
         }
 
         return config;
+    }
+
+    private static void BackupInvalidConfig(string configPath, string reason)
+    {
+        try
+        {
+            var backupPath = $"{configPath}.broken.{DateTime.Now:yyyyMMddHHmmss}";
+            File.Copy(configPath, backupPath, true);
+            Logging.SaveLog($"LoadConfig fallback ({reason}). Backup: {backupPath}");
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
     }
 
     /// <summary>
