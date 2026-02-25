@@ -95,15 +95,15 @@
     </Style>
 
     <Style Selector="Button.ConnectToggle">
-        <Setter Property="Width" Value="186" />
-        <Setter Property="Height" Value="186" />
+        <Setter Property="Width" Value="196" />
+        <Setter Property="Height" Value="196" />
         <Setter Property="Padding" Value="24" />
-        <Setter Property="CornerRadius" Value="93" />
+        <Setter Property="CornerRadius" Value="98" />
         <Setter Property="Background" Value="{DynamicResource GhostConnectButtonBrush}" />
         <Setter Property="BorderBrush" Value="#8DDCFF" />
         <Setter Property="BorderThickness" Value="2" />
         <Setter Property="Foreground" Value="#04101F" />
-        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontSize" Value="18" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />

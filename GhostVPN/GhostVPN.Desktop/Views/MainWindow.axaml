@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:resx="clr-namespace:ServiceLib.Resx;assembly=ServiceLib"
     xmlns:view="using:GhostVPN.Desktop.Views"
     xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
     Title="Ghost VPN"
@@ -23,13 +22,13 @@
         DisableOpeningAnimation="True">
         <Grid
             Margin="14"
-            RowDefinitions="Auto,Auto,Auto,*"
+            RowDefinitions="Auto,*"
             RowSpacing="12">
             <Border
                 Grid.Row="0"
                 Classes="GhostCard"
                 Padding="14">
-                <Grid ColumnDefinitions="*,Auto">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <Image
                             Width="50"
@@ -37,132 +36,104 @@
                             Source="/Assets/ghostvpn-logo.png" />
                         <StackPanel VerticalAlignment="Center" Spacing="2">
                             <TextBlock Classes="GhostTitle" Text="Ghost VPN" />
-                            <TextBlock Classes="GhostSubtitle" Text="Приватный клиент с точечной маршрутизацией" />
                         </StackPanel>
                     </StackPanel>
 
-                    <StackPanel
+                    <Button
+                        x:Name="menuBackupAndRestore"
                         Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="8">
-                        <Button
-                            x:Name="menuBackupAndRestore"
-                            Classes="SecondaryAction"
-                            Content="Резервная копия" />
-                        <Button
-                            x:Name="menuReload"
-                            Classes="PrimaryAction"
-                            Content="Перезагрузка" />
-                    </StackPanel>
+                        Width="170"
+                        Classes="SecondaryAction"
+                        Content="Резервная копия" />
+                    <Button
+                        x:Name="menuReload"
+                        Grid.Column="2"
+                        Width="170"
+                        Classes="PrimaryAction"
+                        Content="Перезагрузка" />
                 </Grid>
             </Border>
 
             <Border
                 Grid.Row="1"
-                Classes="GhostHeroCard"
-                Padding="18">
-                <Grid
-                    ColumnDefinitions="2*,Auto,2*"
-                    ColumnSpacing="18">
-                    <StackPanel
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Spacing="6">
-                        <TextBlock Classes="GhostTitle" Text="Безопасное подключение в 1 клик" />
-                        <TextBlock
-                            Classes="GhostSubtitle"
-                            Text="Клиент в стиле Hiddify: чистый интерфейс, быстрый доступ к серверу и правилам." />
-                        <Border
-                            Classes="GhostBadge"
-                            Padding="12,6"
-                            HorizontalAlignment="Left">
-                            <TextBlock Classes="GhostMicroLabel" Text="VLESS • Xray • sing-box" />
-                        </Border>
-                        <Border
-                            Classes="GhostBadge"
-                            Padding="12,6"
-                            HorizontalAlignment="Left">
-                            <TextBlock Classes="GhostMicroLabel" Text="{Binding VpnToggleButtonText}" />
-                        </Border>
-                    </StackPanel>
-
-                    <StackPanel
-                        Grid.Column="1"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Spacing="8">
-                        <Button
-                            x:Name="btnToggleVpn"
-                            Classes="ConnectToggle"
-                            Content="{Binding VpnToggleButtonText}" />
-                        <TextBlock
-                            HorizontalAlignment="Center"
-                            Classes="GhostMicroLabel"
-                            Text="Главный переключатель VPN" />
-                    </StackPanel>
-
-                    <StackPanel
-                        Grid.Column="2"
-                        VerticalAlignment="Center"
-                        Spacing="10">
-                        <Button
-                            x:Name="btnAddServerFromClipboard"
-                            Classes="PrimaryAction"
-                            Content="Импорт сервера из буфера" />
-                        <Button
-                            x:Name="btnRoutingRules"
-                            Classes="SecondaryAction"
-                            Content="Правила маршрутизации" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-
-            <Border
-                Grid.Row="2"
-                Classes="GhostShellCard"
-                Padding="4">
-                <view:StatusBarView />
-            </Border>
-
-            <Border
-                Grid.Row="3"
                 Classes="GhostCard"
-                Padding="6">
-                <Grid>
-                    <Grid
-                        x:Name="gridMain"
-                        ColumnDefinitions="1*,10,1*"
-                        IsVisible="False">
-                        <ContentControl x:Name="tabProfiles" Grid.Column="0" />
-                        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" />
-                        <TabControl
-                            x:Name="tabMain"
-                            Grid.Column="2"
-                            HorizontalContentAlignment="Left">
-                            <TabItem x:Name="tabMsgView" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
-                        </TabControl>
-                    </Grid>
-                    <Grid
-                        x:Name="gridMain1"
-                        IsVisible="False"
-                        RowDefinitions="1*,10,1*">
-                        <ContentControl x:Name="tabProfiles1" Grid.Row="0" />
-                        <GridSplitter Grid.Row="1" HorizontalAlignment="Stretch" />
-                        <TabControl
-                            x:Name="tabMain1"
-                            Grid.Row="2"
-                            TabStripPlacement="Left">
-                            <TabItem x:Name="tabMsgView1" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
-                        </TabControl>
-                    </Grid>
-                    <Grid x:Name="gridMain2" IsVisible="False">
-                        <TabControl x:Name="tabMain2" TabStripPlacement="Left">
-                            <TabItem x:Name="tabProfiles2" Header="{x:Static resx:ResUI.menuServers}" />
-                            <TabItem x:Name="tabMsgView2" Header="{x:Static resx:ResUI.MsgInformationTitle}" />
-                        </TabControl>
-                    </Grid>
-                </Grid>
+                Padding="8">
+                <TabControl x:Name="tabShell" TabStripPlacement="Left">
+                    <TabItem Header="Главная">
+                        <Grid Margin="8" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+                            <Border
+                                Grid.Row="0"
+                                Classes="GhostHeroCard"
+                                Padding="20">
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="12">
+                                    <Button
+                                        x:Name="btnToggleVpn"
+                                        Classes="ConnectToggle"
+                                        Content="{Binding VpnToggleButtonText}" />
+                                    <Border
+                                        Classes="GhostBadge"
+                                        Padding="14,10"
+                                        HorizontalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <TextBlock
+                                                FontSize="22"
+                                                Text="{Binding ActiveCountryFlag}" />
+                                            <StackPanel Spacing="2">
+                                                <TextBlock
+                                                    FontSize="15"
+                                                    FontWeight="SemiBold"
+                                                    Text="{Binding ActiveCountryName}" />
+                                                <TextBlock
+                                                    Classes="GhostMicroLabel"
+                                                    Text="{Binding ActiveSubscriptionName}" />
+                                                <TextBlock
+                                                    Classes="GhostMicroLabel"
+                                                    Text="{Binding ActiveProtocol}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
+                            <Grid
+                                Grid.Row="1"
+                                ColumnDefinitions="*,*"
+                                ColumnSpacing="12">
+                                <Button
+                                    x:Name="btnAddServerFromClipboard"
+                                    Grid.Column="0"
+                                    Classes="PrimaryAction"
+                                    HorizontalAlignment="Stretch"
+                                    Content="Импорт из буфера" />
+                                <Button
+                                    x:Name="btnRoutingRules"
+                                    Grid.Column="1"
+                                    Classes="SecondaryAction"
+                                    HorizontalAlignment="Stretch"
+                                    Content="Правила маршрутизации" />
+                            </Grid>
+
+                            <Border
+                                Grid.Row="2"
+                                Classes="GhostShellCard"
+                                Padding="6">
+                                <view:MsgView />
+                            </Border>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Конфигурации">
+                        <Border
+                            Margin="8"
+                            Classes="GhostShellCard"
+                            Padding="6">
+                            <ContentControl x:Name="configurationsContent" />
+                        </Border>
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
     </dialogHost:DialogHost>

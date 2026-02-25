@@ -12,11 +12,11 @@ public partial class MsgView : ReactiveUserControl<MsgViewModel>
         txtMsg.TextArea.TextView.Options.EnableHyperlinks = false;
         ViewModel = new MsgViewModel(UpdateViewHandler);
 
-        this.WhenActivated(disposables =>
+        if (ViewModel != null)
         {
-            this.Bind(ViewModel, vm => vm.MsgFilter, v => v.cmbMsgFilter.Text).DisposeWith(disposables);
-            this.Bind(ViewModel, vm => vm.AutoRefresh, v => v.togAutoRefresh.IsChecked).DisposeWith(disposables);
-        });
+            ViewModel.MsgFilter = string.Empty;
+            ViewModel.AutoRefresh = true;
+        }
 
         TextEditorKeywordHighlighter.Attach(txtMsg, Global.LogLevelColors.ToDictionary(
                 kv => kv.Key,
@@ -55,10 +55,7 @@ public partial class MsgView : ReactiveUserControl<MsgViewModel>
         }
 
         txtMsg.AppendText(msg.ToString());
-        if (togScrollToEnd.IsChecked ?? true)
-        {
-            txtMsg.ScrollToEnd();
-        }
+        txtMsg.ScrollToEnd();
     }
 
     public void ClearMsg()

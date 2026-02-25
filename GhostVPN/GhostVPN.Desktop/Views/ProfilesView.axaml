@@ -17,7 +17,7 @@
     </UserControl.Resources>
     <Grid>
         <DockPanel>
-            <WrapPanel Margin="2" DockPanel.Dock="Top">
+            <WrapPanel IsVisible="False" Margin="2" DockPanel.Dock="Top">
                 <ListBox
                     x:Name="lstGroup"
                     IsVisible="False"
@@ -63,6 +63,7 @@
 
                 <TextBox
                     x:Name="txtServerFilter"
+                    IsVisible="False"
                     Width="200"
                     Margin="{StaticResource MarginLr4}"
                     VerticalContentAlignment="Center"
@@ -70,6 +71,7 @@
 
                 <Button
                     x:Name="btnAutofitColumnWidth"
+                    IsVisible="False"
                     Margin="{StaticResource MarginLr4}"
                     Classes="IconButton Success"
                     ToolTip.Tip="{x:Static resx:ResUI.menuProfileAutofitColumnWidth}">

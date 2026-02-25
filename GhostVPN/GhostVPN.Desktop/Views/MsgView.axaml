@@ -9,60 +9,41 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
-    <DockPanel Margin="2">
+    <DockPanel Margin="2" LastChildFill="True">
         <WrapPanel
             Margin="{StaticResource Margin4}"
             VerticalAlignment="Center"
             DockPanel.Dock="Top"
             Orientation="Horizontal">
 
-            <TextBox
-                x:Name="cmbMsgFilter"
-                Width="200"
-                Margin="{StaticResource MarginLr8}"
-                VerticalContentAlignment="Center"
-                Watermark="{x:Static resx:ResUI.MsgFilterTitle}" />
-
             <Button
                 x:Name="btnCopy"
+                MinWidth="140"
                 Margin="{StaticResource MarginLr8}"
-                Classes="IconButton Success"
+                Classes="SecondaryAction"
                 Click="menuMsgViewCopyAll_Click"
                 ToolTip.Tip="{x:Static resx:ResUI.menuMsgViewCopyAll}">
                 <Button.Content>
-                    <PathIcon Data="{StaticResource SemiIconCopy}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource SemiIconCopy}" />
+                        <TextBlock VerticalAlignment="Center" Text="Копировать" />
+                    </StackPanel>
                 </Button.Content>
             </Button>
             <Button
                 x:Name="btnClear"
+                MinWidth="140"
                 Margin="{StaticResource MarginLr8}"
-                Classes="IconButton Success"
+                Classes="SecondaryAction"
                 Click="menuMsgViewClear_Click"
                 ToolTip.Tip="{x:Static resx:ResUI.menuMsgViewClear}">
                 <Button.Content>
-                    <PathIcon Data="{StaticResource SemiIconDelete}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource SemiIconDelete}" />
+                        <TextBlock VerticalAlignment="Center" Text="Очистить" />
+                    </StackPanel>
                 </Button.Content>
             </Button>
-            <TextBlock
-                Margin="{StaticResource MarginLr8}"
-                VerticalAlignment="Center"
-                Text="{x:Static resx:ResUI.TbAutoRefresh}" />
-            <ToggleSwitch
-                x:Name="togAutoRefresh"
-                Margin="{StaticResource MarginLr8}"
-                HorizontalAlignment="Left"
-                IsChecked="True"
-                Theme="{DynamicResource SimpleToggleSwitch}" />
-            <TextBlock
-                Margin="{StaticResource MarginLr8}"
-                VerticalAlignment="Center"
-                Text="{x:Static resx:ResUI.TbAutoScrollToEnd}" />
-            <ToggleSwitch
-                x:Name="togScrollToEnd"
-                Margin="{StaticResource MarginLr8}"
-                HorizontalAlignment="Left"
-                IsChecked="True"
-                Theme="{DynamicResource SimpleToggleSwitch}" />
         </WrapPanel>
 
         <avaloniaEdit:TextEditor

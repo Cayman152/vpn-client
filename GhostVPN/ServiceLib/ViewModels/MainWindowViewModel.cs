@@ -66,6 +66,10 @@ public class MainWindowViewModel : MyReactiveObject
 
     [Reactive] public bool IsVpnConnected { get; set; }
     [Reactive] public string VpnToggleButtonText { get; set; } = "Включить VPN";
+    [Reactive] public string ActiveCountryFlag { get; set; } = "🇱🇻";
+    [Reactive] public string ActiveCountryName { get; set; } = "Латвия";
+    [Reactive] public string ActiveSubscriptionName { get; set; } = "Ghost VPN";
+    [Reactive] public string ActiveProtocol { get; set; } = "VLESS";
 
     #endregion Menu
 
@@ -290,6 +294,7 @@ public class MainWindowViewModel : MyReactiveObject
             await StatisticsManager.Instance.Init(_config, UpdateStatisticsHandler);
         }
         await RefreshServers();
+        await RefreshConnectionBadgeAsync();
 
         await Reload();
     }
@@ -339,7 +344,7 @@ public class MainWindowViewModel : MyReactiveObject
     private void ApplyVpnState(bool connected)
     {
         IsVpnConnected = connected;
-        VpnToggleButtonText = connected ? "Отключить VPN" : "Включить VPN";
+        VpnToggleButtonText = connected ? "Отключить" : "Подключить";
     }
 
     private async Task ConnectVpnAsync()
@@ -375,8 +380,94 @@ public class MainWindowViewModel : MyReactiveObject
     private async Task RefreshServers()
     {
         AppEvents.ProfilesRefreshRequested.Publish();
-
+        await RefreshConnectionBadgeAsync();
         await Task.Delay(200);
+    }
+
+    private async Task RefreshConnectionBadgeAsync()
+    {
+        var node = await ConfigHandler.GetDefaultServer(_config);
+        if (node is null)
+        {
+            ActiveCountryFlag = "🌐";
+            ActiveCountryName = "Нет сервера";
+            ActiveSubscriptionName = "Ghost VPN";
+            ActiveProtocol = "VLESS";
+            return;
+        }
+
+        var remarks = (node.Remarks ?? string.Empty).Trim();
+        var country = ResolveCountryName(remarks);
+
+        ActiveCountryName = country;
+        ActiveCountryFlag = ResolveCountryFlag(country);
+        ActiveProtocol = node.ConfigType.ToString().ToUpperInvariant();
+
+        var subName = "Ghost VPN";
+        if (node.Subid.IsNotEmpty())
+        {
+            var subItem = await AppManager.Instance.GetSubItem(node.Subid);
+            if (subItem?.Remarks.IsNotEmpty() == true)
+            {
+                subName = subItem.Remarks.Trim();
+            }
+        }
+        ActiveSubscriptionName = subName;
+    }
+
+    private static string ResolveCountryName(string remarks)
+    {
+        if (remarks.IsNullOrEmpty())
+        {
+            return "Латвия";
+        }
+
+        var lower = remarks.ToLowerInvariant();
+        if (lower.Contains("latvia") || lower.Contains("латв"))
+        {
+            return "Латвия";
+        }
+        if (lower.Contains("russia") || lower.Contains("росс"))
+        {
+            return "Россия";
+        }
+        if (lower.Contains("germany") || lower.Contains("герман"))
+        {
+            return "Германия";
+        }
+        if (lower.Contains("netherlands") || lower.Contains("нидерланд"))
+        {
+            return "Нидерланды";
+        }
+
+        var token = remarks
+            .Split(['|', '-', ',', ';', '(', ')'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .FirstOrDefault(x => x.IsNotEmpty());
+        return token.IsNotEmpty() ? token : "Латвия";
+    }
+
+    private static string ResolveCountryFlag(string country)
+    {
+        var lower = country.ToLowerInvariant();
+        if (lower.Contains("латв") || lower.Contains("latvia"))
+        {
+            return "🇱🇻";
+        }
+        if (lower.Contains("рос") || lower.Contains("russia"))
+        {
+            return "🇷🇺";
+        }
+        if (lower.Contains("герман") || lower.Contains("germany"))
+        {
+            return "🇩🇪";
+        }
+        if (lower.Contains("нидерланд") || lower.Contains("netherlands"))
+        {
+            return "🇳🇱";
+        }
+
+        return "🌐";
     }
 
     private void RefreshSubscriptions()
@@ -702,7 +793,6 @@ public class MainWindowViewModel : MyReactiveObject
         RxApp.MainThreadScheduler.Schedule(() =>
         {
             ShowClashUI = showClashUI;
-            TabMainSelectedIndex = showClashUI ? TabMainSelectedIndex : 0;
         });
     }
 

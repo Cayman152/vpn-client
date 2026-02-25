@@ -17,8 +17,11 @@ public class MsgViewModel : MyReactiveObject
     {
         _config = AppManager.Instance.Config;
         _updateView = updateView;
-        MsgFilter = _config.MsgUIItem.MainMsgFilter ?? string.Empty;
-        AutoRefresh = _config.MsgUIItem.AutoRefresh ?? true;
+        // Log filter and refresh toggles are intentionally fixed for Ghost UI.
+        MsgFilter = string.Empty;
+        AutoRefresh = true;
+        _config.MsgUIItem.MainMsgFilter = string.Empty;
+        _config.MsgUIItem.AutoRefresh = true;
 
         this.WhenAnyValue(
            x => x.MsgFilter)
