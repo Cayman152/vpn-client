@@ -14,16 +14,24 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        try
         {
-            if (!Design.IsDesignMode)
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                AppManager.Instance.InitComponents();
-                DataContext = StatusBarViewModel.Instance;
-            }
+                if (!Design.IsDesignMode)
+                {
+                    AppManager.Instance.InitComponents();
+                    DataContext = StatusBarViewModel.Instance;
+                }
 
-            desktop.Exit += OnExit;
-            desktop.MainWindow = new MainWindow();
+                desktop.Exit += OnExit;
+                desktop.MainWindow = new MainWindow();
+            }
+        }
+        catch (Exception ex)
+        {
+            Program.ReportFatalStartupError("framework-init", ex);
+            throw;
         }
 
         base.OnFrameworkInitializationCompleted();
