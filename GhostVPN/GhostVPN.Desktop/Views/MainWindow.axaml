@@ -65,44 +65,49 @@
                                 Grid.Row="0"
                                 Classes="GhostHeroCard"
                                 Padding="20">
-                                <StackPanel
+                                <Grid
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Spacing="12">
+                                    RowDefinitions="Auto,Auto"
+                                    RowSpacing="12">
                                     <Button
                                         x:Name="btnToggleVpn"
+                                        Grid.Row="0"
                                         Classes="ConnectToggle"
                                         Content="{Binding VpnToggleButtonText}" />
                                     <Border
+                                        Grid.Row="1"
                                         Classes="GhostBadge"
-                                        MinWidth="600"
-                                        MaxWidth="900"
-                                        Padding="16,12"
-                                        HorizontalAlignment="Stretch">
+                                        MinWidth="520"
+                                        MaxWidth="760"
+                                        Padding="18,12"
+                                        HorizontalAlignment="Center">
                                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                                             <TextBlock
                                                 Grid.Column="0"
                                                 VerticalAlignment="Center"
-                                                FontSize="22"
+                                                FontSize="24"
                                                 Text="{Binding ActiveCountryFlag}" />
-                                            <StackPanel Spacing="2">
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Spacing="3">
                                                 <TextBlock
-                                                    Classes="GhostMicroLabel"
-                                                    Text="Текущая страна подключения" />
-                                                <TextBlock
-                                                    FontSize="15"
+                                                    FontSize="14"
                                                     FontWeight="SemiBold"
-                                                    Text="{Binding ActiveCountryName}" />
+                                                    Text="{Binding ActiveCountryName, StringFormat='Страна подключения: {0}'}"
+                                                    TextTrimming="CharacterEllipsis" />
                                                 <TextBlock
                                                     Classes="GhostMicroLabel"
-                                                    Text="{Binding ActiveSubscriptionName, StringFormat='Подписка: {0}'}" />
+                                                    Text="{Binding ActiveSubscriptionName, StringFormat='Подписка: {0}'}"
+                                                    TextTrimming="CharacterEllipsis" />
                                                 <TextBlock
                                                     Classes="GhostMicroLabel"
                                                     Text="{Binding ActiveProtocol, StringFormat='Протокол: {0}'}" />
                                             </StackPanel>
                                         </Grid>
                                     </Border>
-                                </StackPanel>
+                                </Grid>
                             </Border>
 
                             <Grid
@@ -146,32 +151,12 @@
                             Margin="8"
                             Classes="GhostShellCard"
                             Padding="20">
-                            <StackPanel Spacing="14">
-                                <TextBlock
-                                    Classes="GhostTitle"
-                                    FontSize="20"
-                                    Text="О программе" />
-                                <TextBlock
-                                    Classes="GhostSubtitle"
-                                    Text="Ghost VPN" />
-                                <TextBlock
-                                    Classes="GhostMicroLabel"
-                                    Text="Бот в Telegram" />
-                                <Button
-                                    x:Name="btnTelegramBot"
-                                    HorizontalAlignment="Left"
-                                    Background="Transparent"
-                                    BorderBrush="Transparent"
-                                    BorderThickness="0"
-                                    Padding="0"
-                                    ToolTip.Tip="Открыть Telegram-бота">
-                                    <TextBlock
-                                        Classes="GhostSubtitle"
-                                        Foreground="{DynamicResource GhostAccentBrush}"
-                                        Text="@nkvv_ghost_bot"
-                                        TextDecorations="Underline" />
-                                </Button>
-                            </StackPanel>
+                            <Button
+                                x:Name="btnTelegramBot"
+                                Classes="PrimaryAction"
+                                Width="220"
+                                HorizontalAlignment="Left"
+                                Content="Бот в Telegram" />
                         </Border>
                     </TabItem>
                 </TabControl>

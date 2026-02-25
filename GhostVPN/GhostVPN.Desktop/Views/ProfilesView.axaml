@@ -269,7 +269,7 @@
                         Width="100"
                         Binding="{Binding SubRemarks}"
                         Header="{x:Static resx:ResUI.LvSubscription}"
-                        IsVisible="False"
+                        IsVisible="True"
                         Tag="SubRemarks" />
                     <DataGridTemplateColumn SortMemberPath="Delay" Tag="DelayVal">
                         <DataGridTemplateColumn.Header>

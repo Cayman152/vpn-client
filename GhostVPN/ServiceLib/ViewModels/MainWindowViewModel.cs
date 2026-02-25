@@ -516,6 +516,23 @@ public class MainWindowViewModel : MyReactiveObject
         }
     }
 
+    private async Task<int> UpdateNewSubscriptionsAsync(HashSet<string> oldSubIds)
+    {
+        var subItems = await AppManager.Instance.SubItems() ?? [];
+        var newSubIds = subItems
+            .Where(t => t.Id.IsNotEmpty() && !oldSubIds.Contains(t.Id))
+            .Select(t => t.Id)
+            .Distinct()
+            .ToList();
+
+        foreach (var subId in newSubIds)
+        {
+            await UpdateSubscriptionProcess(subId, false);
+        }
+
+        return newSubIds.Count;
+    }
+
     #endregion Servers && Groups
 
     #region Add Servers
@@ -568,17 +585,21 @@ public class MainWindowViewModel : MyReactiveObject
             return;
         }
 
+        var oldSubIds = (await AppManager.Instance.SubItems() ?? [])
+            .Where(t => t.Id.IsNotEmpty())
+            .Select(t => t.Id)
+            .ToHashSet();
         var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
             .Select(t => t.IndexId)
             .ToHashSet();
         var ret = await ConfigHandler.AddBatchServers(_config, clipboardData, string.Empty, false);
         if (ret > 0)
         {
+            _ = await UpdateNewSubscriptionsAsync(oldSubIds);
             await SetLatestImportedServerAsDefaultAsync(oldServerIds);
             await EnsureSingleServerModeAsync();
             RefreshSubscriptions();
             await RefreshServers();
-            TabMainSelectedIndex = 1;
             NoticeManager.Instance.Enqueue(string.Format(ResUI.SuccessfullyImportedServerViaClipboard, ret));
         }
         else
@@ -624,17 +645,21 @@ public class MainWindowViewModel : MyReactiveObject
         }
         else
         {
+            var oldSubIds = (await AppManager.Instance.SubItems() ?? [])
+                .Where(t => t.Id.IsNotEmpty())
+                .Select(t => t.Id)
+                .ToHashSet();
             var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
                 .Select(t => t.IndexId)
                 .ToHashSet();
             var ret = await ConfigHandler.AddBatchServers(_config, result, string.Empty, false);
             if (ret > 0)
             {
+                _ = await UpdateNewSubscriptionsAsync(oldSubIds);
                 await SetLatestImportedServerAsDefaultAsync(oldServerIds);
                 await EnsureSingleServerModeAsync();
                 RefreshSubscriptions();
                 await RefreshServers();
-                TabMainSelectedIndex = 1;
                 NoticeManager.Instance.Enqueue(ResUI.SuccessfullyImportedServerViaScan);
             }
             else

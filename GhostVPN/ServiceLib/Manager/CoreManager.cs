@@ -220,6 +220,26 @@ public class CoreManager
         var fileName = CoreInfoManager.Instance.GetCoreExecFile(coreInfo, out var msg);
         if (fileName.IsNullOrEmpty())
         {
+            // Fallback: try to find core in local bin tree even if folder layout differs.
+            var localFile = GetLocalCoreExecFile(coreInfo);
+            if (localFile.IsNotEmpty())
+            {
+                fileName = localFile;
+                await UpdateFunc(false, $"{_tag} local fallback core path: {fileName}");
+            }
+        }
+        if (fileName.IsNullOrEmpty())
+        {
+            // Fallback: in LocalAppData mode try running binaries directly from install folder.
+            var installFile = GetInstalledCoreExecFile(coreInfo);
+            if (installFile.IsNotEmpty())
+            {
+                fileName = installFile;
+                await UpdateFunc(false, $"{_tag} fallback core path: {fileName}");
+            }
+        }
+        if (fileName.IsNullOrEmpty())
+        {
             await UpdateFunc(false, msg);
             return null;
         }
@@ -241,6 +261,27 @@ public class CoreManager
         catch (Exception ex)
         {
             Logging.SaveLog(_tag, ex);
+            await UpdateFunc(false, $"{_tag} failed core path: {fileName}");
+
+            // Last-chance fallback for Windows LocalAppData mode: retry with install folder core file.
+            var installFile = GetInstalledCoreExecFile(coreInfo);
+            if (Environment.GetEnvironmentVariable(Global.LocalAppData) == "1"
+                && installFile.IsNotEmpty()
+                && !string.Equals(installFile, fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    await UpdateFunc(false, $"{_tag} retry core path: {installFile}");
+                    return await RunProcessNormal(installFile, coreInfo, configPath, displayLog);
+                }
+                catch (Exception retryEx)
+                {
+                    Logging.SaveLog(_tag, retryEx);
+                    await UpdateFunc(mayNeedSudo, retryEx.Message);
+                    return null;
+                }
+            }
+
             await UpdateFunc(mayNeedSudo, ex.Message);
             return null;
         }
@@ -312,6 +353,96 @@ public class CoreManager
             Logging.SaveLog(_tag, ex);
             return false;
         }
+    }
+
+    private static string GetInstalledCoreExecFile(CoreInfo? coreInfo)
+    {
+        if (coreInfo?.CoreExes == null)
+        {
+            return string.Empty;
+        }
+
+        var installCoreDir = Path.Combine(Utils.GetBaseDirectory("bin"), coreInfo.CoreType.ToString().ToLowerInvariant());
+        if (Directory.Exists(installCoreDir))
+        {
+            foreach (var name in coreInfo.CoreExes)
+            {
+                var candidate = Path.Combine(installCoreDir, Utils.GetExeName(name));
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        return FindCoreExecFile(Utils.GetBaseDirectory("bin"), coreInfo);
+    }
+
+    private static string GetLocalCoreExecFile(CoreInfo? coreInfo)
+    {
+        return FindCoreExecFile(Utils.GetBinPath(""), coreInfo);
+    }
+
+    private static string FindCoreExecFile(string binRoot, CoreInfo? coreInfo)
+    {
+        if (coreInfo?.CoreExes == null || !Directory.Exists(binRoot))
+        {
+            return string.Empty;
+        }
+
+        var exeNames = coreInfo.CoreExes
+            .Select(Utils.GetExeName)
+            .Where(name => name.IsNotEmpty())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (exeNames.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var coreTypeName = coreInfo.CoreType.ToString();
+        var candidateDirs = new[]
+        {
+            Path.Combine(binRoot, coreTypeName.ToLowerInvariant()),
+            Path.Combine(binRoot, coreTypeName),
+            Path.Combine(binRoot, coreTypeName.Replace("_", "-")),
+            binRoot
+        }.Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var dir in candidateDirs)
+        {
+            if (!Directory.Exists(dir))
+            {
+                continue;
+            }
+
+            foreach (var exeName in exeNames)
+            {
+                var candidate = Path.Combine(dir, exeName);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+        }
+
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(binRoot, "*", SearchOption.AllDirectories))
+            {
+                var fileName = Path.GetFileName(file);
+                if (exeNames.Any(exe => string.Equals(exe, fileName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return file;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
+
+        return string.Empty;
     }
 
     private async Task<ProcessService?> RunProcessNormal(string fileName, CoreInfo? coreInfo, string configPath, bool displayLog)
