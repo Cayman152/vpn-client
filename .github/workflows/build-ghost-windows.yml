@@ -16,6 +16,7 @@ permissions:
 
 env:
   OutputPath64: "${{ github.workspace }}\\build\\ghost-vpn-windows-64"
+  OutputPathAmazTool64: "${{ github.workspace }}\\build\\ghost-vpn-amaztool-windows-64"
   ArtifactDir: "${{ github.workspace }}\\artifacts"
   ZipPath64: "${{ github.workspace }}\\artifacts\\GhostVPN-windows-x64.zip"
   SetupPath64: "${{ github.workspace }}\\artifacts\\GhostVPN-Setup-x64.exe"
@@ -87,7 +88,17 @@ jobs:
         shell: pwsh
         run: |
           dotnet publish "$env:PROJECT_DESKTOP" -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPath64"
-          dotnet publish "$env:PROJECT_AMAZTOOL" -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPath64"
+          dotnet publish "$env:PROJECT_AMAZTOOL" -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPathAmazTool64"
+
+      - name: Merge AmazTool into desktop output
+        shell: pwsh
+        run: |
+          $amazToolExe = Join-Path $env:OutputPathAmazTool64 "AmazTool.exe"
+          if (-not (Test-Path $amazToolExe)) {
+            throw "AmazTool.exe not found in $env:OutputPathAmazTool64"
+          }
+
+          Copy-Item -Path $amazToolExe -Destination (Join-Path $env:OutputPath64 "AmazTool.exe") -Force
 
       - name: Download core binaries (xray/sing-box)
         shell: pwsh
@@ -186,6 +197,16 @@ jobs:
         run: |
           function Assert-CoreFiles {
             param([string]$OutPath, [string]$ArchLabel)
+
+            $desktopExe = Join-Path $OutPath "GhostVPN.exe"
+            if (-not (Test-Path $desktopExe)) {
+              throw "Missing required desktop executable for ${ArchLabel}: $desktopExe"
+            }
+
+            $amazToolExe = Join-Path $OutPath "AmazTool.exe"
+            if (-not (Test-Path $amazToolExe)) {
+              throw "Missing required helper executable for ${ArchLabel}: $amazToolExe"
+            }
 
             $xray = Join-Path $OutPath "bin\\xray\\xray.exe"
             if (-not (Test-Path $xray)) {
