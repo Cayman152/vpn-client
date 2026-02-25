@@ -23,7 +23,7 @@ public class CoreManager
         //Copy the bin folder to the storage location (for init)
         if (Environment.GetEnvironmentVariable(Global.LocalAppData) == "1")
         {
-            TrySyncInstalledBinToLocal(overwrite: false);
+            TrySyncInstalledBinToLocal(overwrite: true);
         }
 
         if (Utils.IsNonWindows())
@@ -251,6 +251,12 @@ public class CoreManager
         if (coreInfo?.CoreExes == null || coreInfo.CoreType == ECoreType.GhostVPN)
         {
             return;
+        }
+
+        // In LocalAppData mode always refresh core binaries from install dir to avoid stale/corrupted copies.
+        if (Environment.GetEnvironmentVariable(Global.LocalAppData) == "1")
+        {
+            _ = TrySyncInstalledBinToLocal(overwrite: true);
         }
 
         var hasCore = coreInfo.CoreExes

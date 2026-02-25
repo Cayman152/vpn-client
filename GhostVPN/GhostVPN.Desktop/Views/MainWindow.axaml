@@ -75,25 +75,32 @@
                                         Content="{Binding VpnToggleButtonText}" />
                                     <Border
                                         Classes="GhostBadge"
-                                        Padding="14,10"
-                                        HorizontalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                        MinWidth="600"
+                                        MaxWidth="900"
+                                        Padding="16,12"
+                                        HorizontalAlignment="Stretch">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                                             <TextBlock
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
                                                 FontSize="22"
                                                 Text="{Binding ActiveCountryFlag}" />
                                             <StackPanel Spacing="2">
+                                                <TextBlock
+                                                    Classes="GhostMicroLabel"
+                                                    Text="Текущая страна подключения" />
                                                 <TextBlock
                                                     FontSize="15"
                                                     FontWeight="SemiBold"
                                                     Text="{Binding ActiveCountryName}" />
                                                 <TextBlock
                                                     Classes="GhostMicroLabel"
-                                                    Text="{Binding ActiveSubscriptionName}" />
+                                                    Text="{Binding ActiveSubscriptionName, StringFormat='Подписка: {0}'}" />
                                                 <TextBlock
                                                     Classes="GhostMicroLabel"
-                                                    Text="{Binding ActiveProtocol}" />
+                                                    Text="{Binding ActiveProtocol, StringFormat='Протокол: {0}'}" />
                                             </StackPanel>
-                                        </StackPanel>
+                                        </Grid>
                                     </Border>
                                 </StackPanel>
                             </Border>
