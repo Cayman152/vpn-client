@@ -385,7 +385,8 @@ public class ProfilesViewModel : MyReactiveObject
 
     private async Task RefreshServersBiz()
     {
-        var lstModel = await GetProfileItemsEx(_config.SubIndexId, _serverFilter);
+        // Ghost UI always shows full server list in the "Конфигурации" tab.
+        var lstModel = await GetProfileItemsEx(string.Empty, _serverFilter);
         _lstProfile = JsonUtils.Deserialize<List<ProfileItem>>(JsonUtils.Serialize(lstModel)) ?? [];
 
         ProfileItems.Clear();
@@ -428,7 +429,7 @@ public class ProfilesViewModel : MyReactiveObject
 
     private async Task<List<ProfileItemModel>?> GetProfileItemsEx(string subid, string filter)
     {
-        var lstModel = await AppManager.Instance.ProfileModels(_config.SubIndexId, filter);
+        var lstModel = await AppManager.Instance.ProfileModels(subid, filter);
 
         await ConfigHandler.SetDefaultServer(_config, lstModel);
 

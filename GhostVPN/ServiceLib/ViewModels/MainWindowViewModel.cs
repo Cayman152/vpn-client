@@ -571,13 +571,14 @@ public class MainWindowViewModel : MyReactiveObject
         var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
             .Select(t => t.IndexId)
             .ToHashSet();
-        var ret = await ConfigHandler.AddBatchServers(_config, clipboardData, _config.SubIndexId, false);
+        var ret = await ConfigHandler.AddBatchServers(_config, clipboardData, string.Empty, false);
         if (ret > 0)
         {
             await SetLatestImportedServerAsDefaultAsync(oldServerIds);
             await EnsureSingleServerModeAsync();
             RefreshSubscriptions();
             await RefreshServers();
+            TabMainSelectedIndex = 1;
             NoticeManager.Instance.Enqueue(string.Format(ResUI.SuccessfullyImportedServerViaClipboard, ret));
         }
         else
@@ -626,13 +627,14 @@ public class MainWindowViewModel : MyReactiveObject
             var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
                 .Select(t => t.IndexId)
                 .ToHashSet();
-            var ret = await ConfigHandler.AddBatchServers(_config, result, _config.SubIndexId, false);
+            var ret = await ConfigHandler.AddBatchServers(_config, result, string.Empty, false);
             if (ret > 0)
             {
                 await SetLatestImportedServerAsDefaultAsync(oldServerIds);
                 await EnsureSingleServerModeAsync();
                 RefreshSubscriptions();
                 await RefreshServers();
+                TabMainSelectedIndex = 1;
                 NoticeManager.Instance.Enqueue(ResUI.SuccessfullyImportedServerViaScan);
             }
             else

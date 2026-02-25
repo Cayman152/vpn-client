@@ -140,6 +140,40 @@
                             <ContentControl x:Name="configurationsContent" />
                         </Border>
                     </TabItem>
+
+                    <TabItem Header="О программе">
+                        <Border
+                            Margin="8"
+                            Classes="GhostShellCard"
+                            Padding="20">
+                            <StackPanel Spacing="14">
+                                <TextBlock
+                                    Classes="GhostTitle"
+                                    FontSize="20"
+                                    Text="О программе" />
+                                <TextBlock
+                                    Classes="GhostSubtitle"
+                                    Text="Ghost VPN" />
+                                <TextBlock
+                                    Classes="GhostMicroLabel"
+                                    Text="Бот в Telegram" />
+                                <Button
+                                    x:Name="btnTelegramBot"
+                                    HorizontalAlignment="Left"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    ToolTip.Tip="Открыть Telegram-бота">
+                                    <TextBlock
+                                        Classes="GhostSubtitle"
+                                        Foreground="{DynamicResource GhostAccentBrush}"
+                                        Text="@nkvv_ghost_bot"
+                                        TextDecorations="Underline" />
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                    </TabItem>
                 </TabControl>
             </Border>
         </Grid>

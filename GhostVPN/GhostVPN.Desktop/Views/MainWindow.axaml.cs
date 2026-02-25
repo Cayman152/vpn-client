@@ -23,6 +23,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
 
         KeyDown += MainWindow_KeyDown;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
+        btnTelegramBot.Click += BtnTelegramBot_Click;
         ApplyGhostUiDefaults();
         _ = new ThemeSettingViewModel();
 
@@ -262,6 +263,11 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
     {
         _backupAndRestoreView ??= new BackupAndRestoreView(this);
         DialogHost.Show(_backupAndRestoreView);
+    }
+
+    private void BtnTelegramBot_Click(object? sender, RoutedEventArgs e)
+    {
+        ProcUtils.ProcessStart("https://t.me/nkvv_ghost_bot");
     }
 
     private void Shutdown(bool obj)
