@@ -6,7 +6,7 @@
     <Style Selector="Window">
         <Setter Property="Background" Value="{DynamicResource GhostMainBackgroundBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource GhostTextPrimaryBrush}" />
-        <Setter Property="FontFamily" Value="avares://GhostVPN.Desktop/Assets/Fonts/NotoSansSC-Regular.ttf#Noto Sans SC" />
+        <Setter Property="FontFamily" Value="avares://GhostVPN/Assets/Fonts/NotoSansSC-Regular.ttf#Noto Sans SC, Segoe UI, Arial" />
     </Style>
 
     <Style Selector="UserControl">
