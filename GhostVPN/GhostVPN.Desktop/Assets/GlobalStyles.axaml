@@ -175,10 +175,6 @@
         <Setter Property="BorderBrush" Value="#1C2E4A" />
     </Style>
 
-    <Style Selector="MenuFlyout">
-        <Setter Property="MaxHeight" Value="{StaticResource MenuFlyoutMaxHeight}" />
-    </Style>
-
     <Style Selector="GridSplitter">
         <Setter Property="Background" Value="#243E65" />
     </Style>
