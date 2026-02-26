@@ -44,9 +44,35 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 
+[InstallDelete]
+Type: files; Name: "{app}\v2rayN.exe"
+Type: files; Name: "{app}\V2RayN.exe"
+Type: files; Name: "{autodesktop}\v2rayN.lnk"
+Type: files; Name: "{autodesktop}\V2RayN.lnk"
+Type: files; Name: "{userprograms}\v2rayN.lnk"
+Type: files; Name: "{userprograms}\V2RayN.lnk"
+Type: files; Name: "{commonprograms}\v2rayN.lnk"
+Type: files; Name: "{commonprograms}\V2RayN.lnk"
+Type: filesandordirs; Name: "{userprograms}\v2rayN"
+Type: filesandordirs; Name: "{userprograms}\V2RayN"
+Type: filesandordirs; Name: "{commonprograms}\v2rayN"
+Type: filesandordirs; Name: "{commonprograms}\V2RayN"
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallDelete]
+Type: files; Name: "{autodesktop}\v2rayN.lnk"
+Type: files; Name: "{autodesktop}\V2RayN.lnk"
+Type: files; Name: "{userprograms}\v2rayN.lnk"
+Type: files; Name: "{userprograms}\V2RayN.lnk"
+Type: files; Name: "{commonprograms}\v2rayN.lnk"
+Type: files; Name: "{commonprograms}\V2RayN.lnk"
+Type: filesandordirs; Name: "{userprograms}\v2rayN"
+Type: filesandordirs; Name: "{userprograms}\V2RayN"
+Type: filesandordirs; Name: "{commonprograms}\v2rayN"
+Type: filesandordirs; Name: "{commonprograms}\V2RayN"
