@@ -1,6 +1,6 @@
 # Ghost VPN
 
-Собственный VPN-клиент для Windows (с фокусом на простое подключение и маршрутизацию по правилам).
+Собственный VPN-клиент для Windows и macOS (с фокусом на простое подключение и маршрутизацию по правилам).
 
 ## Быстро скачать
 
@@ -9,6 +9,8 @@
 ## Скачать
 
 - Установщик Windows x64: [GhostVPN-Setup-x64.exe](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
+- macOS Apple Silicon (arm64): [GhostVPN-macOS-arm64.zip](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.zip)
+- macOS Intel (x64): [GhostVPN-macOS-x64.zip](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-x64.zip)
 - Страница релиза: [ghost-vpn-latest](https://github.com/Cayman152/vpn-client/releases/tag/ghost-vpn-latest)
 
 ## Поддерживаемые ядра
@@ -20,6 +22,13 @@
 
 - Workflow: `Ghost VPN Windows Build`
 - Артефакт после успешной сборки: `GhostVPN-Setup-x64.exe`
+
+## Сборка macOS
+
+- Workflow: `Ghost VPN macOS Build`
+- Артефакты после успешной сборки:
+  - `GhostVPN-macOS-arm64.zip`
+  - `GhostVPN-macOS-x64.zip`
 
 ## Поддержка
 
