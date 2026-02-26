@@ -206,9 +206,17 @@ jobs:
 
           $xrayTarget = Join-Path $env:OutputPath64 "bin\\xray"
           $singBoxTarget = Join-Path $env:OutputPath64 "bin\\sing_box"
+          $binRoot = Join-Path $env:OutputPath64 "bin"
 
           Install-CoreFromZip -DownloadUrl $xrayAsset.Url -ZipName $xrayAsset.Name -ExecutableName "xray.exe" -TargetDir $xrayTarget
           Install-CoreFromZip -DownloadUrl $singBoxAsset.Url -ZipName $singBoxAsset.Name -ExecutableName "sing-box.exe" -TargetDir $singBoxTarget
+
+          foreach ($geoFile in @("geoip.dat", "geosite.dat")) {
+            $sourceGeo = Join-Path $xrayTarget $geoFile
+            if (Test-Path $sourceGeo) {
+              Copy-Item -Path $sourceGeo -Destination (Join-Path $binRoot $geoFile) -Force
+            }
+          }
 
       - name: Verify bundled core binaries
         shell: pwsh
@@ -229,6 +237,26 @@ jobs:
             $xray = Join-Path $OutPath "bin\\xray\\xray.exe"
             if (-not (Test-Path $xray)) {
               throw "Missing required core file for ${ArchLabel}: $xray"
+            }
+
+            $geoIpCandidates = @(
+              (Join-Path $OutPath "bin\\geoip.dat"),
+              (Join-Path $OutPath "bin\\xray\\geoip.dat")
+            )
+            $hasGeoIp = $geoIpCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $hasGeoIp) {
+              $joined = ($geoIpCandidates -join ", ")
+              throw "Missing required geoip.dat for ${ArchLabel}. Checked: $joined"
+            }
+
+            $geoSiteCandidates = @(
+              (Join-Path $OutPath "bin\\geosite.dat"),
+              (Join-Path $OutPath "bin\\xray\\geosite.dat")
+            )
+            $hasGeoSite = $geoSiteCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $hasGeoSite) {
+              $joined = ($geoSiteCandidates -join ", ")
+              throw "Missing required geosite.dat for ${ArchLabel}. Checked: $joined"
             }
 
             $singBoxCandidates = @(

@@ -303,24 +303,72 @@ public class CoreManager
         var hasCore = coreInfo.CoreExes
             .Select(name => Utils.GetBinPath(Utils.GetExeName(name), coreInfo.CoreType.ToString()))
             .Any(File.Exists);
-        if (hasCore)
+        if (!hasCore)
+        {
+            // In LocalAppData mode, try to recover missing core binaries from the install folder.
+            if (!TrySyncInstalledBinToLocal(overwrite: false))
+            {
+                Logging.SaveLog($"{_tag} missing core binaries: {Utils.GetBinPath("", coreInfo.CoreType.ToString())}");
+            }
+            else
+            {
+                var restored = coreInfo.CoreExes
+                    .Select(name => Utils.GetBinPath(Utils.GetExeName(name), coreInfo.CoreType.ToString()))
+                    .Any(File.Exists);
+                if (!restored)
+                {
+                    Logging.SaveLog($"{_tag} failed to restore core binaries: {Utils.GetBinPath("", coreInfo.CoreType.ToString())}");
+                }
+            }
+        }
+
+        EnsureGeoDataFiles(coreInfo);
+    }
+
+    private void EnsureGeoDataFiles(CoreInfo coreInfo)
+    {
+        if (coreInfo.CoreType is not (ECoreType.Xray or ECoreType.v2fly or ECoreType.v2fly_v5))
         {
             return;
         }
 
-        // In LocalAppData mode, try to recover missing core binaries from the install folder.
-        if (!TrySyncInstalledBinToLocal(overwrite: false))
-        {
-            Logging.SaveLog($"{_tag} missing core binaries: {Utils.GetBinPath("", coreInfo.CoreType.ToString())}");
-            return;
-        }
+        var targetBinRoot = Utils.GetBinPath("");
+        var coreDir = Utils.GetBinPath("", coreInfo.CoreType.ToString());
+        var installCoreDir = Path.Combine(Utils.GetBaseDirectory("bin"), coreInfo.CoreType.ToString().ToLowerInvariant());
+        var installRootBin = Utils.GetBaseDirectory("bin");
+        var requiredGeoFiles = new[] { "geoip.dat", "geosite.dat" };
 
-        var restored = coreInfo.CoreExes
-            .Select(name => Utils.GetBinPath(Utils.GetExeName(name), coreInfo.CoreType.ToString()))
-            .Any(File.Exists);
-        if (!restored)
+        foreach (var geoFile in requiredGeoFiles)
         {
-            Logging.SaveLog($"{_tag} failed to restore core binaries: {Utils.GetBinPath("", coreInfo.CoreType.ToString())}");
+            try
+            {
+                var targetFile = Path.Combine(targetBinRoot, geoFile);
+                if (File.Exists(targetFile))
+                {
+                    continue;
+                }
+
+                var sourceCandidates = new[]
+                {
+                    Path.Combine(coreDir, geoFile),
+                    Path.Combine(installCoreDir, geoFile),
+                    Path.Combine(installRootBin, geoFile)
+                };
+                var sourceFile = sourceCandidates.FirstOrDefault(File.Exists);
+                if (sourceFile.IsNullOrEmpty())
+                {
+                    Logging.SaveLog($"{_tag} missing geodata file: {geoFile}");
+                    continue;
+                }
+
+                Directory.CreateDirectory(targetBinRoot);
+                File.Copy(sourceFile, targetFile, true);
+                Logging.SaveLog($"{_tag} restored geodata file: {geoFile}");
+            }
+            catch (Exception ex)
+            {
+                Logging.SaveLog(_tag, ex);
+            }
         }
     }
 
