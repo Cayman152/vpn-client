@@ -1,0 +1,18 @@
+[
+  {
+    "remarks": "GhostVPN Proxy - Discord",
+    "outboundTag": "proxy",
+    "domain": [
+      "domain:discord.com",
+      "domain:discord.gg",
+      "domain:discordapp.com",
+      "domain:discordapp.net",
+      "domain:gateway.discord.gg",
+      "domain:media.discordapp.net",
+      "domain:discord.media",
+      "domain:cdn.discordapp.com",
+      "domain:images-ext-1.discordapp.net",
+      "domain:images-ext-2.discordapp.net"
+    ]
+  }
+]

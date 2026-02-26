@@ -1,0 +1,16 @@
+[
+  {
+    "remarks": "GhostVPN Direct - Banks",
+    "outboundTag": "direct",
+    "domain": [
+      "domain:sberbank.ru",
+      "domain:sber.ru",
+      "domain:tbank.ru",
+      "domain:tinkoff.ru",
+      "domain:alfabank.ru",
+      "domain:vtb.ru",
+      "domain:gazprombank.ru",
+      "domain:raiffeisen.ru"
+    ]
+  }
+]

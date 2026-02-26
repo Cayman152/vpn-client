@@ -1,0 +1,140 @@
+<Window
+    x:Class="GhostVPN.Desktop.Views.RoutingRuleSettingWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:resx="clr-namespace:ServiceLib.Resx;assembly=ServiceLib"
+    xmlns:vms="clr-namespace:ServiceLib.ViewModels;assembly=ServiceLib"
+    Title="{x:Static resx:ResUI.menuRoutingRuleSetting}"
+    Width="800"
+    Height="540"
+    x:DataType="vms:RoutingRuleSettingViewModel"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <DockPanel>
+        <Menu Margin="{StaticResource Margin4}" DockPanel.Dock="Top">
+            <MenuItem x:Name="menuRuleAdd" Header="Добавить" />
+            <MenuItem x:Name="menuImportRulesFromFile" IsVisible="False" Header="Импорт правил из JSON-файла" />
+            <MenuItem x:Name="menuExportRulesToJson" IsVisible="False" Header="Экспорт правил в JSON" />
+            <MenuItem Header="Шаблоны Direct">
+                <MenuItem x:Name="menuDirectPresetCinema" Header="Онлайн-кинотеатры" />
+                <MenuItem x:Name="menuDirectPresetBanks" Header="Банки" />
+                <MenuItem x:Name="menuDirectPresetProviders" Header="Провайдеры" />
+                <MenuItem x:Name="menuDirectPresetGtaV" Header="GTA V" />
+            </MenuItem>
+            <MenuItem Header="Шаблоны Proxy">
+                <MenuItem x:Name="menuProxyPresetDiscord" Header="Discord" />
+            </MenuItem>
+        </Menu>
+
+        <StackPanel
+            Margin="{StaticResource Margin4}"
+            HorizontalAlignment="Right"
+            DockPanel.Dock="Bottom"
+            Orientation="Horizontal">
+            <Button
+                x:Name="btnSave"
+                Width="100"
+                Content="{x:Static resx:ResUI.TbConfirm}"
+                IsDefault="True" />
+            <Button
+                x:Name="btnCancel"
+                Width="100"
+                Margin="{StaticResource MarginLr8}"
+                Content="{x:Static resx:ResUI.TbCancel}"
+                IsCancel="True" />
+        </StackPanel>
+
+        <TabControl x:Name="tabAdvanced">
+            <TabItem HorizontalAlignment="Left" Header="{x:Static resx:ResUI.menuRuleList}">
+                <DataGrid
+                    x:Name="lstRules"
+                    AutoGenerateColumns="False"
+                    Background="Transparent"
+                    BorderThickness="1"
+                    CanUserResizeColumns="True"
+                    GridLinesVisibility="All"
+                    HeadersVisibility="Column"
+                    IsReadOnly="True"
+                    ItemsSource="{Binding RulesItems}">
+                    <DataGrid.KeyBindings>
+                        <KeyBinding Command="{Binding RuleExportSelectedCmd}" Gesture="Ctrl+C" />
+                    </DataGrid.KeyBindings>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem
+                                x:Name="menuRuleRemove"
+                                Header="{x:Static resx:ResUI.menuRuleRemove}"
+                                InputGesture="Back" />
+                            <MenuItem
+                                x:Name="menuRuleSelectAll"
+                                IsVisible="False"
+                                Header="{x:Static resx:ResUI.menuSelectAll}"
+                                InputGesture="Ctrl+A" />
+                            <MenuItem x:Name="menuRuleExportSelected" IsVisible="False" Header="{x:Static resx:ResUI.menuRuleExportSelected}" />
+                            <Separator />
+                            <MenuItem
+                                x:Name="menuMoveTop"
+                                IsVisible="False"
+                                Header="{x:Static resx:ResUI.menuMoveTop}"
+                                InputGesture="T" />
+                            <MenuItem
+                                x:Name="menuMoveUp"
+                                Header="{x:Static resx:ResUI.menuMoveUp}"
+                                InputGesture="U" />
+                            <MenuItem
+                                x:Name="menuMoveDown"
+                                Header="{x:Static resx:ResUI.menuMoveDown}"
+                                InputGesture="D" />
+                            <MenuItem
+                                x:Name="menuMoveBottom"
+                                IsVisible="False"
+                                Header="{x:Static resx:ResUI.menuMoveBottom}"
+                                InputGesture="B" />
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn
+                            Width="60"
+                            Binding="{Binding Enabled}"
+                            Header="" />
+                        <DataGridTextColumn
+                            Width="150"
+                            Binding="{Binding Remarks}"
+                            Header="{x:Static resx:ResUI.LvRemarks}" />
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding RuleTypeName}"
+                            Header="{x:Static resx:ResUI.TbRuleType}" />
+                        <DataGridTextColumn
+                            Width="130"
+                            Binding="{Binding OutboundTag}"
+                            Header="outboundTag" />
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding Port}"
+                            Header="port" />
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding Protocols}"
+                            Header="protocol" />
+                        <DataGridTextColumn
+                            Width="120"
+                            Binding="{Binding InboundTags}"
+                            Header="inboundTag" />
+                        <DataGridTextColumn
+                            Width="100"
+                            Binding="{Binding Network}"
+                            Header="network" />
+                        <DataGridTextColumn
+                            Width="*"
+                            Binding="{Binding Domains}"
+                            Header="domain / ip / process" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

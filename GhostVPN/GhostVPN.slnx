@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/GitHub Action/">
+    <File Path="../.github/workflows/build-ghost-windows.yml" />
+    <File Path="../package-debian.sh" />
+    <File Path="../package-osx.sh" />
+    <File Path="../package-release-zip.sh" />
+  </Folder>
+  <Folder Name="/Solution Files/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="AmazTool/AmazTool.csproj" />
+  <Project Path="GlobalHotKeys/src/GlobalHotKeys/GlobalHotKeys.csproj" />
+  <Project Path="ServiceLib/ServiceLib.csproj" />
+  <Project Path="GhostVPN.Desktop/GhostVPN.Desktop.csproj" />
+  <Project Path="GhostVPN/GhostVPN.csproj" />
+</Solution>

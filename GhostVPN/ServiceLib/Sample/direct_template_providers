@@ -1,0 +1,16 @@
+[
+  {
+    "remarks": "GhostVPN Direct - Providers",
+    "outboundTag": "direct",
+    "domain": [
+      "domain:rt.ru",
+      "domain:rostelecom.ru",
+      "domain:beeline.ru",
+      "domain:mts.ru",
+      "domain:megafon.ru",
+      "domain:t2.ru",
+      "domain:tele2.ru",
+      "domain:domru.ru"
+    ]
+  }
+]

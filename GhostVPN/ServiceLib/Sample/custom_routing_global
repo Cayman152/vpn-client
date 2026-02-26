@@ -1,0 +1,27 @@
+[
+	{
+		"remarks": "Блокировать UDP 443",
+		"outboundTag": "block",
+		"port": "443",
+		"network": "udp"
+	},
+	{
+		"remarks": "DIRECT: локальные IP",
+		"outboundTag": "direct",
+		"ip": [
+			"geoip:private"
+		]
+	},
+	{
+		"remarks": "DIRECT: локальные домены",
+		"outboundTag": "direct",
+		"domain": [
+			"geosite:private"
+		]
+	},
+	{
+		"remarks": "Итог: через VPN",
+		"port": "0-65535",
+		"outboundTag": "proxy"
+	}
+]

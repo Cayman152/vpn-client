@@ -1,0 +1,420 @@
+namespace ServiceLib.ViewModels;
+
+public class RoutingRuleSettingViewModel : MyReactiveObject
+{
+    private List<RulesItem> _rules;
+
+    [Reactive]
+    public RoutingItem SelectedRouting { get; set; }
+
+    public IObservableCollection<RulesItemModel> RulesItems { get; } = new ObservableCollectionExtended<RulesItemModel>();
+
+    [Reactive]
+    public RulesItemModel SelectedSource { get; set; }
+
+    public IList<RulesItemModel> SelectedSources { get; set; }
+
+    public ReactiveCommand<Unit, Unit> ImportRulesFromFileCmd { get; }
+    public ReactiveCommand<Unit, Unit> ImportRulesFromClipboardCmd { get; }
+    public ReactiveCommand<Unit, Unit> ImportRulesFromUrlCmd { get; }
+    public ReactiveCommand<Unit, Unit> ExportRulesToJsonCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectCinemaPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectBanksPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectProvidersPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddDirectGtaVPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> AddProxyDiscordPresetCmd { get; }
+    public ReactiveCommand<Unit, Unit> RuleRemoveCmd { get; }
+    public ReactiveCommand<Unit, Unit> RuleExportSelectedCmd { get; }
+    public ReactiveCommand<Unit, Unit> MoveTopCmd { get; }
+    public ReactiveCommand<Unit, Unit> MoveUpCmd { get; }
+    public ReactiveCommand<Unit, Unit> MoveDownCmd { get; }
+    public ReactiveCommand<Unit, Unit> MoveBottomCmd { get; }
+
+    public ReactiveCommand<Unit, Unit> SaveCmd { get; }
+
+    public RoutingRuleSettingViewModel(RoutingItem routingItem, Func<EViewAction, object?, Task<bool>>? updateView)
+    {
+        _config = AppManager.Instance.Config;
+        _updateView = updateView;
+
+        var canEditRemove = this.WhenAnyValue(
+            x => x.SelectedSource,
+            selectedSource => selectedSource != null && !selectedSource.OutboundTag.IsNullOrEmpty());
+
+        ImportRulesFromFileCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await _updateView?.Invoke(EViewAction.ImportRulesFromFile, null);
+        });
+        ImportRulesFromClipboardCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await ImportRulesFromClipboardAsync(null);
+        });
+        ImportRulesFromUrlCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await ImportRulesFromUrl();
+        });
+        ExportRulesToJsonCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await ExportRulesToJsonAsync();
+        });
+        AddDirectCinemaPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddPresetAsync(Global.DirectTemplateCinemaFileName);
+        });
+        AddDirectBanksPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddPresetAsync(Global.DirectTemplateBanksFileName);
+        });
+        AddDirectProvidersPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddPresetAsync(Global.DirectTemplateProvidersFileName);
+        });
+        AddDirectGtaVPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddPresetAsync(Global.DirectTemplateGtaVFileName);
+        });
+        AddProxyDiscordPresetCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await AddPresetAsync(Global.ProxyTemplateDiscordFileName);
+        });
+
+        RuleRemoveCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await RuleRemoveAsync();
+        }, canEditRemove);
+        RuleExportSelectedCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await RuleExportSelectedAsync();
+        }, canEditRemove);
+
+        MoveTopCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await MoveRule(EMove.Top);
+        }, canEditRemove);
+        MoveUpCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await MoveRule(EMove.Up);
+        }, canEditRemove);
+        MoveDownCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await MoveRule(EMove.Down);
+        }, canEditRemove);
+        MoveBottomCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await MoveRule(EMove.Bottom);
+        }, canEditRemove);
+
+        SaveCmd = ReactiveCommand.CreateFromTask(async () =>
+        {
+            await SaveRoutingAsync();
+        });
+
+        SelectedSource = new();
+        SelectedRouting = routingItem;
+        _rules = routingItem.Id.IsNullOrEmpty() ? new() : JsonUtils.Deserialize<List<RulesItem>>(SelectedRouting.RuleSet);
+
+        RefreshRulesItems();
+    }
+
+    public void RefreshRulesItems()
+    {
+        RulesItems.Clear();
+
+        foreach (var item in _rules)
+        {
+            var it = new RulesItemModel()
+            {
+                Id = item.Id,
+                RuleTypeName = item.RuleType?.ToString(),
+                OutboundTag = item.OutboundTag,
+                Port = item.Port,
+                Network = item.Network,
+                Protocols = Utils.List2String(item.Protocol),
+                InboundTags = Utils.List2String(item.InboundTag),
+                Domains = Utils.List2String((item.Domain ?? []).Concat(item.Ip ?? []).ToList().Concat(item.Process ?? []).ToList()),
+                Enabled = item.Enabled,
+                Remarks = item.Remarks,
+            };
+            RulesItems.Add(it);
+        }
+    }
+
+    public async Task RuleEditAsync(bool blNew)
+    {
+        RulesItem? item;
+        if (blNew)
+        {
+            item = new();
+        }
+        else
+        {
+            item = _rules.FirstOrDefault(t => t.Id == SelectedSource?.Id);
+            if (item is null)
+            {
+                return;
+            }
+        }
+        if (await _updateView?.Invoke(EViewAction.RoutingRuleDetailsWindow, item) == true)
+        {
+            if (blNew)
+            {
+                _rules.Insert(0, item);
+            }
+            RefreshRulesItems();
+        }
+    }
+
+    public async Task RuleRemoveAsync()
+    {
+        if (SelectedSource is null || SelectedSource.OutboundTag.IsNullOrEmpty())
+        {
+            NoticeManager.Instance.Enqueue(ResUI.PleaseSelectRules);
+            return;
+        }
+        if (await _updateView?.Invoke(EViewAction.ShowYesNo, null) == false)
+        {
+            return;
+        }
+        foreach (var it in SelectedSources ?? [SelectedSource])
+        {
+            var item = _rules.FirstOrDefault(t => t.Id == it?.Id);
+            if (item != null)
+            {
+                _rules.Remove(item);
+            }
+        }
+
+        RefreshRulesItems();
+    }
+
+    public async Task RuleExportSelectedAsync()
+    {
+        if (SelectedSource is null || SelectedSource.OutboundTag.IsNullOrEmpty())
+        {
+            NoticeManager.Instance.Enqueue(ResUI.PleaseSelectRules);
+            return;
+        }
+
+        var lst = new List<RulesItem>();
+        var sources = SelectedSources ?? [SelectedSource];
+        foreach (var it in _rules)
+        {
+            if (sources.Any(t => t.Id == it?.Id))
+            {
+                var item2 = JsonUtils.DeepCopy(it);
+                item2.Id = null;
+                lst.Add(item2 ?? new());
+            }
+        }
+        if (lst.Count > 0)
+        {
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            };
+            await _updateView?.Invoke(EViewAction.SetClipboardData, JsonUtils.Serialize(lst, options));
+        }
+    }
+
+    private async Task ExportRulesToJsonAsync()
+    {
+        var exportRules = new List<RulesItem>();
+        foreach (var it in _rules)
+        {
+            var item = JsonUtils.DeepCopy(it);
+            item.Id = null;
+            exportRules.Add(item ?? new());
+        }
+
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+        await _updateView?.Invoke(EViewAction.ExportRoutingRulesToFile, JsonUtils.Serialize(exportRules, options));
+    }
+
+    private async Task AddPresetAsync(string resourceName)
+    {
+        var presetRules = EmbedUtils.GetEmbedText(resourceName);
+        if (presetRules.IsNullOrEmpty())
+        {
+            NoticeManager.Instance.Enqueue(ResUI.OperationFailed);
+            return;
+        }
+
+        var ret = await AddBatchRoutingRulesAsync(SelectedRouting, presetRules);
+        if (ret == 0)
+        {
+            EnsureRoutingRemarks(GetPresetDisplayName(resourceName));
+            RefreshRulesItems();
+            NoticeManager.Instance.Enqueue(ResUI.OperationSuccess);
+        }
+    }
+
+    public async Task MoveRule(EMove eMove)
+    {
+        if (SelectedSource is null || SelectedSource.OutboundTag.IsNullOrEmpty())
+        {
+            NoticeManager.Instance.Enqueue(ResUI.PleaseSelectRules);
+            return;
+        }
+
+        var item = _rules.FirstOrDefault(t => t.Id == SelectedSource?.Id);
+        if (item == null)
+        {
+            return;
+        }
+        var index = _rules.IndexOf(item);
+        if (await ConfigHandler.MoveRoutingRule(_rules, index, eMove) == 0)
+        {
+            RefreshRulesItems();
+        }
+    }
+
+    private async Task SaveRoutingAsync()
+    {
+        EnsureRoutingRemarks();
+
+        var item = SelectedRouting;
+        foreach (var it in _rules)
+        {
+            it.Id = Utils.GetGuid(false);
+        }
+        item.RuleNum = _rules.Count;
+        item.RuleSet = JsonUtils.Serialize(_rules, false);
+
+        if (await ConfigHandler.SaveRoutingItem(_config, item) == 0)
+        {
+            NoticeManager.Instance.Enqueue(ResUI.OperationSuccess);
+            _updateView?.Invoke(EViewAction.CloseWindow, null);
+        }
+        else
+        {
+            NoticeManager.Instance.Enqueue(ResUI.OperationFailed);
+        }
+    }
+
+    private void EnsureRoutingRemarks(string? preferredName = null)
+    {
+        var currentName = SelectedRouting.Remarks?.Trim();
+        if (!string.IsNullOrEmpty(currentName))
+        {
+            SelectedRouting.Remarks = currentName;
+            return;
+        }
+
+        var fallbackName = preferredName?.Trim();
+        if (string.IsNullOrEmpty(fallbackName))
+        {
+            fallbackName = $"Набор правил {DateTime.Now:MM-dd HH:mm}";
+        }
+
+        SelectedRouting.Remarks = fallbackName;
+    }
+
+    private static string? GetPresetDisplayName(string resourceName) =>
+        resourceName switch
+        {
+            Global.DirectTemplateCinemaFileName => "Direct: Онлайн-кинотеатры",
+            Global.DirectTemplateBanksFileName => "Direct: Банки",
+            Global.DirectTemplateProvidersFileName => "Direct: Провайдеры",
+            Global.DirectTemplateGtaVFileName => "Direct: GTA V",
+            Global.ProxyTemplateDiscordFileName => "Proxy: Discord",
+            _ => null
+        };
+
+    #region Import rules
+
+    public async Task ImportRulesFromFileAsync(string fileName)
+    {
+        if (fileName.IsNullOrEmpty())
+        {
+            return;
+        }
+
+        var result = EmbedUtils.LoadResource(fileName);
+        if (result.IsNullOrEmpty())
+        {
+            return;
+        }
+        var ret = await AddBatchRoutingRulesAsync(SelectedRouting, result);
+        if (ret == 0)
+        {
+            RefreshRulesItems();
+            NoticeManager.Instance.Enqueue(ResUI.OperationSuccess);
+        }
+    }
+
+    public async Task ImportRulesFromClipboardAsync(string? clipboardData)
+    {
+        if (clipboardData == null)
+        {
+            await _updateView?.Invoke(EViewAction.ImportRulesFromClipboard, null);
+            return;
+        }
+        var ret = await AddBatchRoutingRulesAsync(SelectedRouting, clipboardData);
+        if (ret == 0)
+        {
+            RefreshRulesItems();
+            NoticeManager.Instance.Enqueue(ResUI.OperationSuccess);
+        }
+    }
+
+    private async Task ImportRulesFromUrl()
+    {
+        var url = SelectedRouting.Url;
+        if (url.IsNullOrEmpty())
+        {
+            NoticeManager.Instance.Enqueue(ResUI.MsgNeedUrl);
+            return;
+        }
+
+        var downloadHandle = new DownloadService();
+        var result = await downloadHandle.TryDownloadString(url, true, "");
+        var ret = await AddBatchRoutingRulesAsync(SelectedRouting, result);
+        if (ret == 0)
+        {
+            RefreshRulesItems();
+            NoticeManager.Instance.Enqueue(ResUI.OperationSuccess);
+        }
+    }
+
+    private async Task<int> AddBatchRoutingRulesAsync(RoutingItem routingItem, string? clipboardData)
+    {
+        var blReplace = false;
+        if (await _updateView?.Invoke(EViewAction.AddBatchRoutingRulesYesNo, null) == false)
+        {
+            blReplace = true;
+        }
+        if (clipboardData.IsNullOrEmpty())
+        {
+            return -1;
+        }
+        var lstRules = JsonUtils.Deserialize<List<RulesItem>>(clipboardData);
+        if (lstRules == null)
+        {
+            return -1;
+        }
+        foreach (var rule in lstRules)
+        {
+            rule.Id = Utils.GetGuid(false);
+        }
+
+        if (blReplace)
+        {
+            _rules = lstRules;
+        }
+        else
+        {
+            // New rules should have higher priority, so prepend them.
+            _rules.InsertRange(0, lstRules);
+        }
+        return 0;
+    }
+
+    #endregion Import rules
+}

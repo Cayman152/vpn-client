@@ -1,0 +1,337 @@
+name: Ghost VPN Windows Build
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Optional release tag (example: v0.1.0)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  OutputPath64: "${{ github.workspace }}\\build\\ghost-vpn-windows-64"
+  OutputPathAmazTool64: "${{ github.workspace }}\\build\\ghost-vpn-amaztool-windows-64"
+  ArtifactDir: "${{ github.workspace }}\\artifacts"
+  SetupPath64: "${{ github.workspace }}\\artifacts\\GhostVPN-Setup-x64.exe"
+  RollingReleaseTag: "ghost-vpn-latest"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve source paths
+        shell: pwsh
+        run: |
+          $sourceRoot = (Resolve-Path "./GhostVPN").Path
+          $desktopProject = Join-Path $sourceRoot "GhostVPN.Desktop\\GhostVPN.Desktop.csproj"
+          $amazToolProject = Join-Path $sourceRoot "AmazTool\\AmazTool.csproj"
+          $propsPath = Join-Path $sourceRoot "Directory.Build.props"
+          $globalHotKeysFile = Join-Path $sourceRoot "GlobalHotKeys\\src\\GlobalHotKeys\\HotKeyManager.cs"
+
+          foreach ($requiredPath in @($desktopProject, $amazToolProject, $propsPath, $globalHotKeysFile)) {
+            if (-not (Test-Path $requiredPath)) {
+              throw "Required path not found: $requiredPath"
+            }
+          }
+
+          "SOURCE_ROOT=$sourceRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PROJECT_DESKTOP=$desktopProject" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PROJECT_AMAZTOOL=$amazToolProject" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PROPS_PATH=$propsPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "GLOBAL_HOTKEYS_FILE=$globalHotKeysFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Patch GlobalHotKeys nullable warning
+        shell: pwsh
+        run: |
+          $content = Get-Content -Path $env:GLOBAL_HOTKEYS_FILE -Raw
+          $patched = $content.Replace("GetModuleHandle(null);", "GetModuleHandle(null!);")
+          if ($patched -ne $content) {
+            Set-Content -Path $env:GLOBAL_HOTKEYS_FILE -Value $patched -Encoding utf8
+          }
+
+      - name: Resolve app version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.inputs.release_tag }}".Trim()
+          if ($tag) {
+            if ($tag.StartsWith("v")) {
+              $tag = $tag.Substring(1)
+            }
+            $version = $tag
+          }
+          else {
+            [xml]$props = Get-Content $env:PROPS_PATH
+            $baseVersion = $props.Project.PropertyGroup[0].Version
+            $version = "$baseVersion.${{ github.run_number }}"
+          }
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build desktop win-x64
+        shell: pwsh
+        run: |
+          dotnet publish "$env:PROJECT_DESKTOP" -c Release -r win-x64 -p:SelfContained=true -p:PublishSingleFile=false -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPath64"
+
+          $desktopExe = Join-Path $env:OutputPath64 "GhostVPN.exe"
+          if (-not (Test-Path $desktopExe)) {
+            throw "GhostVPN.exe was not produced by desktop publish: $desktopExe"
+          }
+
+      - name: Build AmazTool win-x64
+        shell: pwsh
+        run: |
+          dotnet publish "$env:PROJECT_AMAZTOOL" -c Release -r win-x64 -p:SelfContained=true -p:EnableWindowsTargeting=true -p:TreatWarningsAsErrors=false -p:WarningsAsErrors= -p:NoWarn=CS8625 -o "$env:OutputPathAmazTool64"
+
+          $amazToolExe = Join-Path $env:OutputPathAmazTool64 "AmazTool.exe"
+          if (-not (Test-Path $amazToolExe)) {
+            throw "AmazTool.exe was not produced by AmazTool publish: $amazToolExe"
+          }
+
+      - name: Merge AmazTool into desktop output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path $env:OutputPath64)) {
+            throw "Desktop output folder does not exist: $env:OutputPath64"
+          }
+
+          $amazToolExe = Join-Path $env:OutputPathAmazTool64 "AmazTool.exe"
+          if (-not (Test-Path $amazToolExe)) {
+            throw "AmazTool.exe not found in $env:OutputPathAmazTool64"
+          }
+
+          Copy-Item -Path $amazToolExe -Destination (Join-Path $env:OutputPath64 "AmazTool.exe") -Force
+
+      - name: Download core binaries (xray/sing-box)
+        shell: pwsh
+        run: |
+          $headers = @{
+            "User-Agent" = "ghost-vpn-build"
+            "Accept" = "application/vnd.github+json"
+          }
+
+          $tmpRoot = Join-Path $env:RUNNER_TEMP "ghostvpn-cores"
+          New-Item -ItemType Directory -Path $tmpRoot -Force | Out-Null
+
+          function Get-LatestAsset {
+            param(
+              [string]$Repo,
+              [string[]]$Patterns
+            )
+
+            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers $headers
+            if (-not $release -or -not $release.assets) {
+              throw "Release metadata has no assets for repository '$Repo'"
+            }
+
+            $asset = $null
+            $matchedPattern = $null
+            foreach ($pattern in $Patterns) {
+              $asset = $release.assets | Where-Object { $_.name -match $pattern } | Select-Object -First 1
+              if ($asset) {
+                $matchedPattern = $pattern
+                break
+              }
+            }
+
+            if (-not $asset) {
+              $availableAssets = ($release.assets | Select-Object -ExpandProperty name | Select-Object -First 120) -join ", "
+              $patternsText = ($Patterns -join "; ")
+              throw "No asset matched any pattern '$patternsText' for repository '$Repo'. Available assets sample: $availableAssets"
+            }
+
+            Write-Host "Selected asset for ${Repo}: $($asset.name) (pattern: $matchedPattern)"
+
+            return [PSCustomObject]@{
+              Tag = $release.tag_name
+              Name = $asset.name
+              Url = $asset.browser_download_url
+            }
+          }
+
+          function Install-CoreFromZip {
+            param(
+              [string]$DownloadUrl,
+              [string]$ZipName,
+              [string]$ExecutableName,
+              [string]$TargetDir
+            )
+
+            $zipPath = Join-Path $tmpRoot $ZipName
+            $extractPath = Join-Path $tmpRoot ([System.IO.Path]::GetFileNameWithoutExtension($ZipName))
+
+            Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipPath
+            Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+
+            $exePath = Get-ChildItem -Path $extractPath -File -Recurse |
+              Where-Object { $_.Name -ieq $ExecutableName } |
+              Select-Object -First 1
+
+            if (-not $exePath) {
+              throw "Executable '$ExecutableName' not found in package '$ZipName'"
+            }
+
+            New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
+            Copy-Item -Path (Join-Path $exePath.Directory.FullName "*") -Destination $TargetDir -Recurse -Force
+          }
+
+          $xrayAsset = Get-LatestAsset -Repo "XTLS/Xray-core" -Patterns @(
+            "^Xray-windows-64\.zip$",
+            "^Xray-windows-amd64\.zip$",
+            "^Xray-windows-x64\.zip$",
+            "^Xray-windows-(64|amd64|x64).+\.zip$",
+            "^Xray-windows-.*\.zip$"
+          )
+          $singBoxAsset = Get-LatestAsset -Repo "SagerNet/sing-box" -Patterns @(
+            "^sing-box-.*-windows-amd64\.zip$",
+            "^sing-box-.*-windows-x86_64\.zip$",
+            "^sing-box-.*windows.*(amd64|x86_64|x64|64).*.zip$"
+          )
+
+          $xrayTarget = Join-Path $env:OutputPath64 "bin\\xray"
+          $singBoxTarget = Join-Path $env:OutputPath64 "bin\\sing_box"
+          $binRoot = Join-Path $env:OutputPath64 "bin"
+
+          Install-CoreFromZip -DownloadUrl $xrayAsset.Url -ZipName $xrayAsset.Name -ExecutableName "xray.exe" -TargetDir $xrayTarget
+          Install-CoreFromZip -DownloadUrl $singBoxAsset.Url -ZipName $singBoxAsset.Name -ExecutableName "sing-box.exe" -TargetDir $singBoxTarget
+
+          foreach ($geoFile in @("geoip.dat", "geosite.dat")) {
+            $sourceGeo = Join-Path $xrayTarget $geoFile
+            if (Test-Path $sourceGeo) {
+              Copy-Item -Path $sourceGeo -Destination (Join-Path $binRoot $geoFile) -Force
+            }
+          }
+
+      - name: Verify bundled core binaries
+        shell: pwsh
+        run: |
+          function Assert-CoreFiles {
+            param([string]$OutPath, [string]$ArchLabel)
+
+            $desktopExe = Join-Path $OutPath "GhostVPN.exe"
+            if (-not (Test-Path $desktopExe)) {
+              throw "Missing required desktop executable for ${ArchLabel}: $desktopExe"
+            }
+
+            $amazToolExe = Join-Path $OutPath "AmazTool.exe"
+            if (-not (Test-Path $amazToolExe)) {
+              throw "Missing required helper executable for ${ArchLabel}: $amazToolExe"
+            }
+
+            $xray = Join-Path $OutPath "bin\\xray\\xray.exe"
+            if (-not (Test-Path $xray)) {
+              throw "Missing required core file for ${ArchLabel}: $xray"
+            }
+
+            $geoIpCandidates = @(
+              (Join-Path $OutPath "bin\\geoip.dat"),
+              (Join-Path $OutPath "bin\\xray\\geoip.dat")
+            )
+            $hasGeoIp = $geoIpCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $hasGeoIp) {
+              $joined = ($geoIpCandidates -join ", ")
+              throw "Missing required geoip.dat for ${ArchLabel}. Checked: $joined"
+            }
+
+            $geoSiteCandidates = @(
+              (Join-Path $OutPath "bin\\geosite.dat"),
+              (Join-Path $OutPath "bin\\xray\\geosite.dat")
+            )
+            $hasGeoSite = $geoSiteCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $hasGeoSite) {
+              $joined = ($geoSiteCandidates -join ", ")
+              throw "Missing required geosite.dat for ${ArchLabel}. Checked: $joined"
+            }
+
+            $singBoxCandidates = @(
+              (Join-Path $OutPath "bin\\sing_box\\sing-box.exe"),
+              (Join-Path $OutPath "bin\\sing_box\\sing-box-client.exe")
+            )
+            $hasSingBox = $singBoxCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if (-not $hasSingBox) {
+              $joined = ($singBoxCandidates -join ", ")
+              throw "Missing required sing-box executable for ${ArchLabel}. Checked: $joined"
+            }
+          }
+
+          Assert-CoreFiles -OutPath $env:OutputPath64 -ArchLabel "win-x64"
+
+      - name: Build setup installer (x64)
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\\Inno Setup 6\\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup --no-progress -y
+          }
+          $iscc = "${env:ProgramFiles(x86)}\\Inno Setup 6\\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            throw "Inno Setup compiler not found"
+          }
+
+          New-Item -ItemType Directory -Path "$env:ArtifactDir" -Force | Out-Null
+          & $iscc "/DMyAppVersion=$env:APP_VERSION" "/DSourceDir=$env:OutputPath64" "/DOutputDir=$env:ArtifactDir" "./installer/ghost-vpn.iss"
+
+          if (-not (Test-Path $env:SetupPath64)) {
+            $builtInstaller = Get-ChildItem -Path $env:ArtifactDir -Filter "*.exe" -File | Select-Object -First 1
+            if (-not $builtInstaller) {
+              throw "Setup installer was not created"
+            }
+            Move-Item -Path $builtInstaller.FullName -Destination $env:SetupPath64 -Force
+          }
+
+      - name: Upload windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghost-vpn-windows
+          path: |
+            ${{ env.SetupPath64 }}
+          retention-days: 14
+
+      - name: Publish build summary
+        shell: pwsh
+        run: |
+          @"
+          ## Ghost VPN build artifacts
+          - Artifact name: ghost-vpn-windows
+          - File: GhostVPN-Setup-x64.exe
+          - Rolling release page: https://github.com/${{ github.repository }}/releases/tag/${{ env.RollingReleaseTag }}
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+
+      - name: Upload archives to rolling GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RollingReleaseTag }}
+          name: Ghost VPN Latest Build
+          prerelease: false
+          make_latest: true
+          overwrite_files: true
+          body: |
+            Автопубликация последней сборки Ghost VPN для Windows.
+            Commit: ${{ github.sha }}
+            Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          files: |
+            ${{ env.SetupPath64 }}
+
+      - name: Upload archives to GitHub Release
+        if: ${{ github.event.inputs.release_tag != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_tag }}
+          prerelease: true
+          files: |
+            ${{ env.SetupPath64 }}
