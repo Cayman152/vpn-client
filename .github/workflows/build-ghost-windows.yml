@@ -18,7 +18,6 @@ env:
   OutputPath64: "${{ github.workspace }}\\build\\ghost-vpn-windows-64"
   OutputPathAmazTool64: "${{ github.workspace }}\\build\\ghost-vpn-amaztool-windows-64"
   ArtifactDir: "${{ github.workspace }}\\artifacts"
-  ZipPath64: "${{ github.workspace }}\\artifacts\\GhostVPN-windows-x64.zip"
   SetupPath64: "${{ github.workspace }}\\artifacts\\GhostVPN-Setup-x64.exe"
   RollingReleaseTag: "ghost-vpn-latest"
 
@@ -272,12 +271,6 @@ jobs:
 
           Assert-CoreFiles -OutPath $env:OutputPath64 -ArchLabel "win-x64"
 
-      - name: Package zip archives
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path "$env:ArtifactDir" -Force | Out-Null
-          Compress-Archive -Path "$env:OutputPath64\\*" -DestinationPath "$env:ZipPath64" -Force
-
       - name: Build setup installer (x64)
         shell: pwsh
         run: |
@@ -301,12 +294,32 @@ jobs:
             Move-Item -Path $builtInstaller.FullName -Destination $env:SetupPath64 -Force
           }
 
+      - name: Remove legacy portable asset from rolling release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete-asset "$env:RollingReleaseTag" "GhostVPN-windows-x64.zip" --repo "${{ github.repository }}" --yes 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Legacy ZIP asset not found in rolling release (or release does not exist yet)."
+          }
+
+      - name: Remove legacy portable asset from tagged release
+        if: ${{ github.event.inputs.release_tag != '' }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete-asset "${{ github.event.inputs.release_tag }}" "GhostVPN-windows-x64.zip" --repo "${{ github.repository }}" --yes 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Legacy ZIP asset not found in tagged release."
+          }
+
       - name: Upload windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ghost-vpn-windows
           path: |
-            ${{ env.ZipPath64 }}
             ${{ env.SetupPath64 }}
           retention-days: 14
 
@@ -316,8 +329,7 @@ jobs:
           @"
           ## Ghost VPN build artifacts
           - Artifact name: ghost-vpn-windows
-          - File 1: GhostVPN-windows-x64.zip
-          - File 2: GhostVPN-Setup-x64.exe
+          - File: GhostVPN-Setup-x64.exe
           - Rolling release page: https://github.com/${{ github.repository }}/releases/tag/${{ env.RollingReleaseTag }}
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
@@ -334,7 +346,6 @@ jobs:
             Commit: ${{ github.sha }}
             Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           files: |
-            ${{ env.ZipPath64 }}
             ${{ env.SetupPath64 }}
 
       - name: Upload archives to GitHub Release
@@ -344,5 +355,4 @@ jobs:
           tag_name: ${{ github.event.inputs.release_tag }}
           prerelease: true
           files: |
-            ${{ env.ZipPath64 }}
             ${{ env.SetupPath64 }}

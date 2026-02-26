@@ -2,10 +2,13 @@
 
 Собственный VPN-клиент для Windows (с фокусом на простое подключение и маршрутизацию по правилам).
 
+## Быстро скачать
+
+[![Download Installer](https://img.shields.io/badge/Windows-Download%20Installer-00B7FF?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
+
 ## Скачать
 
-- Установщик Windows x64: [GhostVPN-Setup-x64.exe](https://github.com/Cayman152/vpn-client/releases/download/ghost-vpn-latest/GhostVPN-Setup-x64.exe)
-- Портативная версия x64 (ZIP): [GhostVPN-windows-x64.zip](https://github.com/Cayman152/vpn-client/releases/download/ghost-vpn-latest/GhostVPN-windows-x64.zip)
+- Установщик Windows x64: [GhostVPN-Setup-x64.exe](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
 - Страница релиза: [ghost-vpn-latest](https://github.com/Cayman152/vpn-client/releases/tag/ghost-vpn-latest)
 
 ## Поддерживаемые ядра
@@ -16,7 +19,7 @@
 ## Сборка Windows
 
 - Workflow: `Ghost VPN Windows Build`
-- Артефакты после успешной сборки: `GhostVPN-windows-x64.zip`, `GhostVPN-Setup-x64.exe`
+- Артефакт после успешной сборки: `GhostVPN-Setup-x64.exe`
 
 ## Поддержка
 
