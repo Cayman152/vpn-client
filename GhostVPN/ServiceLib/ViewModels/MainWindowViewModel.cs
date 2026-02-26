@@ -4,6 +4,8 @@ namespace ServiceLib.ViewModels;
 
 public class MainWindowViewModel : MyReactiveObject
 {
+    private static readonly ConcurrentDictionary<string, string> _countryByServerCache = new();
+
     #region Menu
 
     //servers
@@ -407,10 +409,90 @@ public class MainWindowViewModel : MyReactiveObject
             }
         }
         ActiveSubscriptionName = subName;
+
         var country = ResolveCountryName(remarks, node.Address, subName);
+        if (country == "Не определена" && IsVpnConnected)
+        {
+            country = await ResolveCountryFromIpApiAsync(node.IndexId) ?? country;
+        }
         ActiveCountryName = country;
         ActiveCountryFlag = ResolveCountryFlag(country);
         ActiveProtocol = node.ConfigType.ToString().ToUpperInvariant();
+    }
+
+    private async Task<string?> ResolveCountryFromIpApiAsync(string indexId)
+    {
+        if (indexId.IsNullOrEmpty())
+        {
+            return null;
+        }
+
+        if (_countryByServerCache.TryGetValue(indexId, out var cached) && cached.IsNotEmpty())
+        {
+            return cached;
+        }
+
+        try
+        {
+            var url = _config.SpeedTestItem.IPAPIUrl;
+            if (url.IsNullOrEmpty())
+            {
+                return null;
+            }
+
+            var downloadService = new DownloadService();
+            var response = await downloadService.TryDownloadString(url, true, string.Empty);
+            if (response.IsNullOrEmpty())
+            {
+                return null;
+            }
+
+            var ipInfo = JsonUtils.Deserialize<IPAPIInfo>(response);
+            var rawCountry = ipInfo?.country_name
+                ?? ipInfo?.country
+                ?? ipInfo?.country_code
+                ?? ipInfo?.countryCode
+                ?? ipInfo?.location?.country_code;
+            if (rawCountry.IsNullOrEmpty())
+            {
+                return null;
+            }
+
+            var normalized = NormalizeCountryName(rawCountry);
+            if (normalized.IsNotEmpty())
+            {
+                _countryByServerCache[indexId] = normalized;
+                return normalized;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog("ResolveCountryFromIpApiAsync", ex);
+        }
+
+        return null;
+    }
+
+    private static string NormalizeCountryName(string rawCountry)
+    {
+        var normalized = rawCountry.Trim();
+        if (normalized.IsNullOrEmpty())
+        {
+            return string.Empty;
+        }
+
+        var upper = normalized.ToUpperInvariant();
+        return upper switch
+        {
+            "LV" or "LATVIA" => "Латвия",
+            "RU" or "RUSSIA" or "RUSSIAN FEDERATION" => "Россия",
+            "DE" or "GERMANY" => "Германия",
+            "NL" or "NETHERLANDS" => "Нидерланды",
+            "US" or "USA" or "UNITED STATES" or "UNITED STATES OF AMERICA" => "США",
+            "FR" or "FRANCE" => "Франция",
+            "GB" or "UK" or "UNITED KINGDOM" => "Великобритания",
+            _ => normalized
+        };
     }
 
     private static string ResolveCountryName(string remarks, string address, string subscriptionName)
@@ -506,32 +588,6 @@ public class MainWindowViewModel : MyReactiveObject
         AppEvents.SubscriptionsRefreshRequested.Publish();
     }
 
-    private async Task EnsureSingleServerModeAsync()
-    {
-        var profiles = await AppManager.Instance.ProfileItems("");
-        if (profiles == null || profiles.Count <= 1)
-        {
-            return;
-        }
-
-        var active = await ConfigHandler.GetDefaultServer(_config) ?? profiles.First();
-        if (active.IndexId.IsNotEmpty())
-        {
-            await ConfigHandler.SetDefaultServerIndex(_config, active.IndexId);
-        }
-
-        var removeItems = profiles
-            .Where(t => t.IndexId != active.IndexId)
-            .ToList();
-        if (removeItems.Count <= 0)
-        {
-            return;
-        }
-
-        await ConfigHandler.RemoveServers(_config, removeItems);
-        NoticeManager.Instance.Enqueue("Ghost VPN: оставлен только один активный сервер.");
-    }
-
     private async Task SetLatestImportedServerAsDefaultAsync(HashSet<string> oldServerIds)
     {
         var profiles = await AppManager.Instance.ProfileItems("");
@@ -622,10 +678,6 @@ public class MainWindowViewModel : MyReactiveObject
             {
                 await ConfigHandler.SetDefaultServerIndex(_config, item.IndexId);
             }
-            if (!eConfigType.IsGroupType())
-            {
-                await EnsureSingleServerModeAsync();
-            }
             await RefreshServers();
             if (item.IndexId == _config.IndexId)
             {
@@ -651,7 +703,6 @@ public class MainWindowViewModel : MyReactiveObject
         if (ret > 0 || updatedSubCount > 0)
         {
             await SetLatestImportedServerAsDefaultAsync(oldServerIds);
-            await EnsureSingleServerModeAsync();
             RefreshSubscriptions();
             await RefreshServers();
             if (updatedSubCount > 0 && subscriptionUrls.Count > 0)
@@ -715,7 +766,6 @@ public class MainWindowViewModel : MyReactiveObject
             if (ret > 0 || updatedSubCount > 0)
             {
                 await SetLatestImportedServerAsDefaultAsync(oldServerIds);
-                await EnsureSingleServerModeAsync();
                 RefreshSubscriptions();
                 await RefreshServers();
                 if (updatedSubCount > 0 && subscriptionUrls.Count > 0)
