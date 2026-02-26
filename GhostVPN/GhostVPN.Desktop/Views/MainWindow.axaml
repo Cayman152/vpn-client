@@ -156,6 +156,7 @@
                                 Classes="PrimaryAction"
                                 Width="220"
                                 HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
                                 Content="Бот в Telegram" />
                         </Border>
                     </TabItem>

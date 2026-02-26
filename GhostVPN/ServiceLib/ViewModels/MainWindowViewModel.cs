@@ -397,12 +397,6 @@ public class MainWindowViewModel : MyReactiveObject
         }
 
         var remarks = (node.Remarks ?? string.Empty).Trim();
-        var country = ResolveCountryName(remarks);
-
-        ActiveCountryName = country;
-        ActiveCountryFlag = ResolveCountryFlag(country);
-        ActiveProtocol = node.ConfigType.ToString().ToUpperInvariant();
-
         var subName = "Ghost VPN";
         if (node.Subid.IsNotEmpty())
         {
@@ -413,38 +407,63 @@ public class MainWindowViewModel : MyReactiveObject
             }
         }
         ActiveSubscriptionName = subName;
+        var country = ResolveCountryName(remarks, node.Address, subName);
+        ActiveCountryName = country;
+        ActiveCountryFlag = ResolveCountryFlag(country);
+        ActiveProtocol = node.ConfigType.ToString().ToUpperInvariant();
     }
 
-    private static string ResolveCountryName(string remarks)
+    private static string ResolveCountryName(string remarks, string address, string subscriptionName)
     {
-        if (remarks.IsNullOrEmpty())
+        var source = $"{remarks} {address} {subscriptionName}".ToLowerInvariant();
+        if (source.IsNullOrWhiteSpace())
         {
-            return "Латвия";
+            return "Не определена";
         }
 
-        var lower = remarks.ToLowerInvariant();
-        if (lower.Contains("latvia") || lower.Contains("латв"))
+        if (ContainsAny(source, "latvia", "латв", ".lv", "-lv", "_lv"))
         {
             return "Латвия";
         }
-        if (lower.Contains("russia") || lower.Contains("росс"))
+        if (ContainsAny(source, "russia", "росс", ".ru", "-ru", "_ru"))
         {
             return "Россия";
         }
-        if (lower.Contains("germany") || lower.Contains("герман"))
+        if (ContainsAny(source, "germany", "герман", ".de", "-de", "_de"))
         {
             return "Германия";
         }
-        if (lower.Contains("netherlands") || lower.Contains("нидерланд"))
+        if (ContainsAny(source, "netherlands", "нидерланд", "holland", ".nl", "-nl", "_nl"))
         {
             return "Нидерланды";
         }
+        if (ContainsAny(source, "usa", "united states", "сша", ".us", "-us", "_us"))
+        {
+            return "США";
+        }
+        if (ContainsAny(source, "france", "франц", ".fr", "-fr", "_fr"))
+        {
+            return "Франция";
+        }
+        if (ContainsAny(source, "uk", "united kingdom", "england", "британ", ".uk", "-uk", "_uk"))
+        {
+            return "Великобритания";
+        }
 
-        var token = remarks
-            .Split(['|', '-', ',', ';', '(', ')'], StringSplitOptions.RemoveEmptyEntries)
-            .Select(x => x.Trim())
-            .FirstOrDefault(x => x.IsNotEmpty());
-        return token.IsNotEmpty() ? token : "Латвия";
+        return "Не определена";
+    }
+
+    private static bool ContainsAny(string source, params string[] tokens)
+    {
+        foreach (var token in tokens)
+        {
+            if (source.Contains(token, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string ResolveCountryFlag(string country)
@@ -465,6 +484,18 @@ public class MainWindowViewModel : MyReactiveObject
         if (lower.Contains("нидерланд") || lower.Contains("netherlands"))
         {
             return "🇳🇱";
+        }
+        if (lower.Contains("сша") || lower.Contains("usa") || lower.Contains("united states"))
+        {
+            return "🇺🇸";
+        }
+        if (lower.Contains("франц") || lower.Contains("france"))
+        {
+            return "🇫🇷";
+        }
+        if (lower.Contains("британ") || lower.Contains("united kingdom") || lower.Contains("england"))
+        {
+            return "🇬🇧";
         }
 
         return "🌐";
@@ -509,28 +540,54 @@ public class MainWindowViewModel : MyReactiveObject
             return;
         }
 
-        var imported = profiles.FirstOrDefault(t => !oldServerIds.Contains(t.IndexId)) ?? profiles.Last();
-        if (imported.IndexId.IsNotEmpty())
+        var imported = profiles.FirstOrDefault(t => !oldServerIds.Contains(t.IndexId));
+        if (imported?.IndexId.IsNotEmpty() == true)
         {
             await ConfigHandler.SetDefaultServerIndex(_config, imported.IndexId);
         }
     }
 
-    private async Task<int> UpdateNewSubscriptionsAsync(HashSet<string> oldSubIds)
+    private static List<string> ExtractSubscriptionUrls(string rawData)
     {
+        if (rawData.IsNullOrWhiteSpace())
+        {
+            return [];
+        }
+
+        return rawData
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .Where(t => t.StartsWith(Global.HttpProtocol, StringComparison.OrdinalIgnoreCase)
+                || t.StartsWith(Global.HttpsProtocol, StringComparison.OrdinalIgnoreCase))
+            .Distinct()
+            .ToList();
+    }
+
+    private async Task<int> UpdateSubscriptionsByUrlAsync(List<string> subscriptionUrls)
+    {
+        if (subscriptionUrls.Count == 0)
+        {
+            return 0;
+        }
+
+        var normalizedUrls = subscriptionUrls
+            .Select(t => t.Trim())
+            .Where(t => t.IsNotEmpty())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         var subItems = await AppManager.Instance.SubItems() ?? [];
-        var newSubIds = subItems
-            .Where(t => t.Id.IsNotEmpty() && !oldSubIds.Contains(t.Id))
+        var matchedSubIds = subItems
+            .Where(t => t.Id.IsNotEmpty() && t.Url.IsNotEmpty() && normalizedUrls.Contains(t.Url.Trim()))
             .Select(t => t.Id)
             .Distinct()
             .ToList();
 
-        foreach (var subId in newSubIds)
+        foreach (var subId in matchedSubIds)
         {
             await UpdateSubscriptionProcess(subId, false);
         }
 
-        return newSubIds.Count;
+        return matchedSubIds.Count;
     }
 
     #endregion Servers && Groups
@@ -585,22 +642,26 @@ public class MainWindowViewModel : MyReactiveObject
             return;
         }
 
-        var oldSubIds = (await AppManager.Instance.SubItems() ?? [])
-            .Where(t => t.Id.IsNotEmpty())
-            .Select(t => t.Id)
-            .ToHashSet();
+        var subscriptionUrls = ExtractSubscriptionUrls(clipboardData);
         var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
             .Select(t => t.IndexId)
             .ToHashSet();
         var ret = await ConfigHandler.AddBatchServers(_config, clipboardData, string.Empty, false);
-        if (ret > 0)
+        var updatedSubCount = await UpdateSubscriptionsByUrlAsync(subscriptionUrls);
+        if (ret > 0 || updatedSubCount > 0)
         {
-            _ = await UpdateNewSubscriptionsAsync(oldSubIds);
             await SetLatestImportedServerAsDefaultAsync(oldServerIds);
             await EnsureSingleServerModeAsync();
             RefreshSubscriptions();
             await RefreshServers();
-            NoticeManager.Instance.Enqueue(string.Format(ResUI.SuccessfullyImportedServerViaClipboard, ret));
+            if (updatedSubCount > 0 && subscriptionUrls.Count > 0)
+            {
+                NoticeManager.Instance.Enqueue($"Подписка обновлена: {updatedSubCount}");
+            }
+            else
+            {
+                NoticeManager.Instance.Enqueue(string.Format(ResUI.SuccessfullyImportedServerViaClipboard, ret));
+            }
         }
         else
         {
@@ -645,22 +706,26 @@ public class MainWindowViewModel : MyReactiveObject
         }
         else
         {
-            var oldSubIds = (await AppManager.Instance.SubItems() ?? [])
-                .Where(t => t.Id.IsNotEmpty())
-                .Select(t => t.Id)
-                .ToHashSet();
+            var subscriptionUrls = ExtractSubscriptionUrls(result);
             var oldServerIds = (await AppManager.Instance.ProfileItems("") ?? [])
                 .Select(t => t.IndexId)
                 .ToHashSet();
             var ret = await ConfigHandler.AddBatchServers(_config, result, string.Empty, false);
-            if (ret > 0)
+            var updatedSubCount = await UpdateSubscriptionsByUrlAsync(subscriptionUrls);
+            if (ret > 0 || updatedSubCount > 0)
             {
-                _ = await UpdateNewSubscriptionsAsync(oldSubIds);
                 await SetLatestImportedServerAsDefaultAsync(oldServerIds);
                 await EnsureSingleServerModeAsync();
                 RefreshSubscriptions();
                 await RefreshServers();
-                NoticeManager.Instance.Enqueue(ResUI.SuccessfullyImportedServerViaScan);
+                if (updatedSubCount > 0 && subscriptionUrls.Count > 0)
+                {
+                    NoticeManager.Instance.Enqueue($"Подписка обновлена: {updatedSubCount}");
+                }
+                else
+                {
+                    NoticeManager.Instance.Enqueue(ResUI.SuccessfullyImportedServerViaScan);
+                }
             }
             else
             {
