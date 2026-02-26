@@ -28,6 +28,7 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
         lstProfiles.DoubleTapped += LstProfiles_DoubleTapped;
         lstProfiles.LoadingRow += LstProfiles_LoadingRow;
         lstProfiles.Sorting += LstProfiles_Sorting;
+        lstProfiles.ContextMenu = null;
         //if (_config.uiItem.enableDragDropSort)
         //{
         //    lstProfiles.AllowDrop = true;
@@ -243,14 +244,7 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
             return;
         }
 
-        if (_config.UiItem.DoubleClick2Activate)
-        {
-            ViewModel?.SetDefaultServer();
-        }
-        else
-        {
-            ViewModel?.EditServerAsync();
-        }
+        ViewModel?.SetDefaultServer();
     }
 
     private void LstProfiles_LoadingRow(object? sender, DataGridRowEventArgs e)

@@ -93,13 +93,13 @@
                                                 VerticalAlignment="Center"
                                                 Spacing="3">
                                                 <TextBlock
+                                                    Classes="GhostMicroLabel"
+                                                    Text="{Binding ActiveSubscriptionName, StringFormat='Подписка: {0}'}"
+                                                    TextTrimming="CharacterEllipsis" />
+                                                <TextBlock
                                                     FontSize="14"
                                                     FontWeight="SemiBold"
                                                     Text="{Binding ActiveCountryName, StringFormat='Страна подключения: {0}'}"
-                                                    TextTrimming="CharacterEllipsis" />
-                                                <TextBlock
-                                                    Classes="GhostMicroLabel"
-                                                    Text="{Binding ActiveSubscriptionName, StringFormat='Подписка: {0}'}"
                                                     TextTrimming="CharacterEllipsis" />
                                                 <TextBlock
                                                     Classes="GhostMicroLabel"

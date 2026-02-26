@@ -132,6 +132,14 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
             case EViewAction.RoutingSettingWindow:
                 return await new RoutingSettingWindow().ShowDialog<bool>(this);
 
+            case EViewAction.RoutingRuleSettingWindow:
+                if (obj is null)
+                {
+                    return false;
+                }
+
+                return await new RoutingRuleSettingWindow((RoutingItem)obj).ShowDialog<bool>(this);
+
             case EViewAction.OptionSettingWindow:
                 return await new OptionSettingWindow().ShowDialog<bool>(this);
 

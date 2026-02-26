@@ -15,8 +15,8 @@
     mc:Ignorable="d">
     <DockPanel>
         <Menu Margin="{StaticResource Margin4}" DockPanel.Dock="Top">
-            <MenuItem x:Name="menuImportRulesFromFile" Header="Импорт правил из JSON-файла" />
-            <MenuItem x:Name="menuExportRulesToJson" Header="Экспорт правил в JSON" />
+            <MenuItem x:Name="menuImportRulesFromFile" IsVisible="False" Header="Импорт правил из JSON-файла" />
+            <MenuItem x:Name="menuExportRulesToJson" IsVisible="False" Header="Экспорт правил в JSON" />
             <MenuItem Header="Шаблоны Direct">
                 <MenuItem x:Name="menuDirectPresetCinema" Header="Онлайн-кинотеатры" />
                 <MenuItem x:Name="menuDirectPresetBanks" Header="Банки" />
@@ -69,12 +69,14 @@
                                 InputGesture="Back" />
                             <MenuItem
                                 x:Name="menuRuleSelectAll"
+                                IsVisible="False"
                                 Header="{x:Static resx:ResUI.menuSelectAll}"
                                 InputGesture="Ctrl+A" />
-                            <MenuItem x:Name="menuRuleExportSelected" Header="{x:Static resx:ResUI.menuRuleExportSelected}" />
+                            <MenuItem x:Name="menuRuleExportSelected" IsVisible="False" Header="{x:Static resx:ResUI.menuRuleExportSelected}" />
                             <Separator />
                             <MenuItem
                                 x:Name="menuMoveTop"
+                                IsVisible="False"
                                 Header="{x:Static resx:ResUI.menuMoveTop}"
                                 InputGesture="T" />
                             <MenuItem
@@ -87,6 +89,7 @@
                                 InputGesture="D" />
                             <MenuItem
                                 x:Name="menuMoveBottom"
+                                IsVisible="False"
                                 Header="{x:Static resx:ResUI.menuMoveBottom}"
                                 InputGesture="B" />
                         </ContextMenu>

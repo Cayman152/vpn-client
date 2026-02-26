@@ -9,6 +9,7 @@ public partial class MsgView : ReactiveUserControl<MsgViewModel>
     public MsgView()
     {
         InitializeComponent();
+        txtMsg.ContextFlyout = null;
         txtMsg.TextArea.TextView.Options.EnableHyperlinks = false;
         ViewModel = new MsgViewModel(UpdateViewHandler);
 

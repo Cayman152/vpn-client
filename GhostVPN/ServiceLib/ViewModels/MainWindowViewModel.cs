@@ -817,7 +817,21 @@ public class MainWindowViewModel : MyReactiveObject
 
     private async Task RoutingSettingAsync()
     {
-        var ret = await _updateView?.Invoke(EViewAction.RoutingSettingWindow, null);
+        await ConfigHandler.InitBuiltinRouting(_config);
+
+        var routingItem = await AppManager.Instance.GetRoutingItem(_config.RoutingBasicItem.RoutingIndexId);
+        if (routingItem is null)
+        {
+            var items = await AppManager.Instance.RoutingItems();
+            routingItem = items?.FirstOrDefault(t => t.IsActive) ?? items?.FirstOrDefault();
+        }
+        if (routingItem is null)
+        {
+            NoticeManager.Instance.Enqueue("Не удалось открыть правила маршрутизации.");
+            return;
+        }
+
+        var ret = await _updateView?.Invoke(EViewAction.RoutingRuleSettingWindow, routingItem);
         if (ret == true)
         {
             await ConfigHandler.InitBuiltinRouting(_config);
