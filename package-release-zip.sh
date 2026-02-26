@@ -6,7 +6,7 @@ OutputPath="$2"
 OutputArch="GhostVPN-${Arch}"
 FileName="GhostVPN-${Arch}.zip"
 
-wget -nv -O $FileName "https://github.com/2dust/GhostVPN-core-bin/raw/refs/heads/master/$FileName"
+wget -nv -O $FileName "https://github.com/Cayman152/vpn-client/releases/latest/download/$FileName"
 
 ZipPath64="./$OutputArch"
 mkdir $ZipPath64

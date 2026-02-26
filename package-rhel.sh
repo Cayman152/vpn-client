@@ -387,13 +387,13 @@ download_geo_assets() {
     geoip-private.srs geoip-cn.srs geoip-facebook.srs geoip-fastly.srs \
     geoip-google.srs geoip-netflix.srs geoip-telegram.srs geoip-twitter.srs; do
     curl -fsSL -o "$srss_dir/$f" \
-      "https://raw.githubusercontent.com/2dust/sing-box-rules/rule-set-geoip/$f" || true
+      "https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geoip/$f" || true
   done
   for f in \
     geosite-cn.srs geosite-gfw.srs geosite-google.srs geosite-greatfire.srs \
     geosite-geolocation-cn.srs geosite-category-ads-all.srs geosite-private.srs; do
     curl -fsSL -o "$srss_dir/$f" \
-      "https://raw.githubusercontent.com/2dust/sing-box-rules/rule-set-geosite/$f" || true
+      "https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/sing-box/rule-set-geosite/$f" || true
   done
 
   # Unify to bin/
@@ -405,9 +405,9 @@ download_ghostvpn_bundle() {
   local outroot="$1"
   local url=""
   if [[ "$RID_DIR" == "linux-arm64" ]]; then
-    url="https://raw.githubusercontent.com/2dust/GhostVPN-core-bin/refs/heads/master/GhostVPN-linux-arm64.zip"
+    url="https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-linux-arm64.zip"
   else
-    url="https://raw.githubusercontent.com/2dust/GhostVPN-core-bin/refs/heads/master/GhostVPN-linux-64.zip"
+    url="https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-linux-64.zip"
   fi
   echo "[+] Try GhostVPN bundle archive: $url"
   local tmp zipname
