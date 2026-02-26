@@ -373,6 +373,10 @@ jobs:
               }
             }
 
+            # Ad-hoc sign the bundle to avoid Gatekeeper "app is damaged" errors on unsigned artifacts.
+            & /usr/bin/codesign --force --deep --sign - --timestamp=none $appRoot
+            & /usr/bin/codesign --verify --deep --strict --verbose=2 $appRoot
+
             $dmgRoot = Join-Path $env:RUNNER_TEMP "GhostVPN-$ArchLabel-dmg-root"
             if (Test-Path $dmgRoot) {
               Remove-Item -Path $dmgRoot -Recurse -Force
