@@ -17,6 +17,7 @@ public partial class RoutingRuleSettingWindow : WindowBase<RoutingRuleSettingVie
 
         Loaded += Window_Loaded;
         btnCancel.Click += (s, e) => Close();
+        btnRuleAdd.Click += btnRuleAdd_Click;
         KeyDown += RoutingRuleSettingWindow_KeyDown;
         lstRules.SelectionChanged += lstRules_SelectionChanged;
         lstRules.DoubleTapped += LstRules_DoubleTapped;
@@ -190,6 +191,16 @@ public partial class RoutingRuleSettingWindow : WindowBase<RoutingRuleSettingVie
     private void menuRuleSelectAll_Click(object? sender, RoutedEventArgs e)
     {
         lstRules.SelectAll();
+    }
+
+    private async void btnRuleAdd_Click(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        await ViewModel.RuleEditAsync(true);
     }
 
 }

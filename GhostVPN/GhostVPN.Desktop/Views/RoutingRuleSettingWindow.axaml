@@ -34,6 +34,11 @@
             DockPanel.Dock="Bottom"
             Orientation="Horizontal">
             <Button
+                x:Name="btnRuleAdd"
+                Width="100"
+                Margin="0,0,8,0"
+                Content="Добавить" />
+            <Button
                 x:Name="btnSave"
                 Width="100"
                 Content="{x:Static resx:ResUI.TbConfirm}"
