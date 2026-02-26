@@ -28,7 +28,15 @@ public partial class ProfilesView : ReactiveUserControl<ProfilesViewModel>
         lstProfiles.DoubleTapped += LstProfiles_DoubleTapped;
         lstProfiles.LoadingRow += LstProfiles_LoadingRow;
         lstProfiles.Sorting += LstProfiles_Sorting;
-        lstProfiles.ContextMenu = null;
+        var removeServerMenuItem = new MenuItem { Header = ResUI.menuRemoveServer };
+        removeServerMenuItem.Click += (_, _) =>
+        {
+            _ = ViewModel?.RemoveServerAsync();
+        };
+        lstProfiles.ContextMenu = new ContextMenu
+        {
+            ItemsSource = new[] { removeServerMenuItem }
+        };
         //if (_config.uiItem.enableDragDropSort)
         //{
         //    lstProfiles.AllowDrop = true;

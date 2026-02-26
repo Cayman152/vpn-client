@@ -16,7 +16,7 @@
     <DockPanel>
         <Grid
             Margin="{StaticResource Margin4}"
-            ColumnDefinitions="Auto,Auto,Auto"
+            ColumnDefinitions="Auto,Auto"
             DockPanel.Dock="Top"
             RowDefinitions="Auto,Auto,Auto">
             <TextBlock
@@ -47,14 +47,6 @@
                 Margin="{StaticResource Margin4}"
                 MaxDropDownHeight="1000" />
             <TextBlock
-                Grid.Row="1"
-                Grid.Column="2"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Text="{x:Static resx:ResUI.TbRuleTypeTips}" />
-
-            <TextBlock
                 Grid.Row="2"
                 Grid.Column="0"
                 Margin="{StaticResource Margin4}"
@@ -67,15 +59,6 @@
                 Width="300"
                 Margin="{StaticResource Margin4}"
                 IsEditable="True" />
-            <StackPanel
-                Grid.Row="2"
-                Grid.Column="2"
-                Margin="{StaticResource Margin4}"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Orientation="Horizontal">
-                <TextBlock VerticalAlignment="Center" Text="{x:Static resx:ResUI.TbRuleOutboundTagTip}" />
-            </StackPanel>
         </Grid>
 
         <StackPanel

@@ -15,6 +15,7 @@
     mc:Ignorable="d">
     <DockPanel>
         <Menu Margin="{StaticResource Margin4}" DockPanel.Dock="Top">
+            <MenuItem x:Name="menuRuleAdd" Header="Добавить" />
             <MenuItem x:Name="menuImportRulesFromFile" IsVisible="False" Header="Импорт правил из JSON-файла" />
             <MenuItem x:Name="menuExportRulesToJson" IsVisible="False" Header="Экспорт правил в JSON" />
             <MenuItem Header="Шаблоны Direct">
@@ -33,11 +34,6 @@
             HorizontalAlignment="Right"
             DockPanel.Dock="Bottom"
             Orientation="Horizontal">
-            <Button
-                x:Name="btnRuleAdd"
-                Width="100"
-                Margin="0,0,8,0"
-                Content="Добавить" />
             <Button
                 x:Name="btnSave"
                 Width="100"
