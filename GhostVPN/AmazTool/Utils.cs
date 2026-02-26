@@ -24,16 +24,16 @@ internal class Utils
         return Path.Combine(startupPath, fileName);
     }
 
-    public static string V2rayN => "GhostVPN";
+    public static string GhostVpnExecutableName => "GhostVPN";
 
-    public static void StartV2RayN()
+    public static void StartGhostVpn()
     {
         Process process = new()
         {
             StartInfo = new()
             {
                 UseShellExecute = true,
-                FileName = V2rayN,
+                FileName = GhostVpnExecutableName,
                 WorkingDirectory = StartupPath()
             }
         };

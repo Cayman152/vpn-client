@@ -32,7 +32,7 @@ cat >"$PackagePath/GhostVPN.app/Contents/Info.plist" <<-EOF
   <key>CFBundleIconName</key>
   <string>AppIcon</string>
   <key>CFBundleIdentifier</key>
-  <string>2dust.GhostVPN</string>
+  <string>com.ghostvpn.client</string>
   <key>CFBundleName</key>
   <string>GhostVPN</string>
   <key>CFBundlePackageType</key>

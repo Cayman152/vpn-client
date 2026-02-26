@@ -584,7 +584,7 @@ public class Global
         { ECoreType.overtls, "ShadowsocksR-Live/overtls" },
         { ECoreType.shadowquic, "spongebob888/shadowquic" },
         { ECoreType.mieru, "enfein/mieru" },
-        { ECoreType.GhostVPN, "2dust/GhostVPN" },
+        { ECoreType.GhostVPN, "Cayman152/vpn-client" },
     };
 
     public static readonly List<string> OtherGeoUrls =

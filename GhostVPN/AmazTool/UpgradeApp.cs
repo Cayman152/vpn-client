@@ -21,11 +21,11 @@ internal class UpgradeApp
         Console.WriteLine(Resx.Resource.TryTerminateProcess);
         try
         {
-            var existing = Process.GetProcessesByName(Utils.V2rayN);
+            var existing = Process.GetProcessesByName(Utils.GhostVpnExecutableName);
             foreach (var pp in existing)
             {
                 var path = pp.MainModule?.FileName ?? "";
-                if (path.StartsWith(Utils.GetPath(Utils.V2rayN)))
+                if (path.StartsWith(Utils.GetPath(Utils.GhostVpnExecutableName)))
                 {
                     pp?.Kill();
                     pp?.WaitForExit(1000);
@@ -103,7 +103,7 @@ internal class UpgradeApp
         Console.WriteLine(Resx.Resource.RestartGhostVPN);
         Utils.Waiting(2);
 
-        Utils.StartV2RayN();
+        Utils.StartGhostVpn();
     }
 
     private static bool TryExtractToFile(ZipArchiveEntry entry, string outputPath)

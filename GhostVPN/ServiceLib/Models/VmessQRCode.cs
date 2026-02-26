@@ -1,7 +1,7 @@
 namespace ServiceLib.Models;
 
 /// <summary>
-/// https://github.com/2dust/GhostVPN/wiki/
+/// https://github.com/Cayman152/vpn-client/wiki/
 /// </summary>
 [Serializable]
 public class VmessQRCode

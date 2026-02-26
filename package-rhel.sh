@@ -158,7 +158,7 @@ choose_channel() {
 
 get_latest_tag_latest() {
   # Resolve /releases/latest → tag_name
-  curl -fsSL "https://api.github.com/repos/2dust/GhostVPN/releases/latest" \
+  curl -fsSL "https://api.github.com/repos/Cayman152/vpn-client/releases/latest" \
     | grep -Eo '"tag_name":\s*"v?[^"]+"' \
     | head -n1 \
     | sed -E 's/.*"tag_name":\s*"v?([^"]+)".*/\1/'
@@ -167,7 +167,7 @@ get_latest_tag_latest() {
 get_latest_tag_prerelease() {
   # Resolve newest prerelease=true tag; prefer jq, fallback to sed/grep (no awk)
   local json tag
-  json="$(curl -fsSL "https://api.github.com/repos/2dust/GhostVPN/releases?per_page=20")" || return 1
+  json="$(curl -fsSL "https://api.github.com/repos/Cayman152/vpn-client/releases?per_page=20")" || return 1
 
   # 1) Use jq if present
   if command -v jq >/dev/null 2>&1; then
@@ -545,8 +545,8 @@ Version:        __VERSION__
 Release:        1%{?dist}
 Summary:        GhostVPN (Avalonia) GUI client for Linux (x86_64/aarch64)
 License:        GPL-3.0-only
-URL:            https://github.com/2dust/GhostVPN
-BugURL:         https://github.com/2dust/GhostVPN/issues
+URL:            https://github.com/Cayman152/vpn-client
+BugURL:         https://github.com/Cayman152/vpn-client/issues
 ExclusiveArch:  aarch64 x86_64
 Source0:        __PKGROOT__.tar.gz
 
@@ -565,7 +565,7 @@ GhostVPN Linux for Red Hat Enterprise Linux
 Support vless / vmess / Trojan / http / socks / Anytls / Hysteria2 / Shadowsocks / tuic / WireGuard
 Support Red Hat Enterprise Linux / Fedora Linux / Rocky Linux / AlmaLinux / CentOS
 For more information, Please visit our website
-https://github.com/2dust/GhostVPN
+https://github.com/Cayman152/vpn-client
 
 %prep
 %setup -q -n __PKGROOT__

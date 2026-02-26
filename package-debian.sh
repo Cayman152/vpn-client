@@ -27,7 +27,7 @@ cat >"${PackagePath}/DEBIAN/control" <<-EOF
 Package: GhostVPN
 Version: $Version
 Architecture: $Arch2
-Maintainer: https://github.com/2dust/GhostVPN
+Maintainer: https://github.com/Cayman152/vpn-client
 Depends: libc6 (>= 2.34), fontconfig (>= 2.13.1), desktop-file-utils (>= 0.26), xdg-utils (>= 1.1.3), coreutils (>= 8.32), bash (>= 5.1), libfreetype6 (>= 2.11)
 Description: A GUI client for Windows and Linux, support Xray core and sing-box-core and others
 EOF

@@ -676,7 +676,7 @@
     <value>Core: basic settings</value>
   </data>
   <data name="TbCustomDnsRay" xml:space="preserve">
-    <value>V2ray Custom DNS</value>
+    <value>Custom DNS</value>
   </data>
   <data name="TbSettingsCoreKcp" xml:space="preserve">
     <value>Core: KCP settings</value>
@@ -1468,7 +1468,7 @@
     <value>Enable Full Config Template</value>
   </data>
   <data name="TbRayFullConfigTemplate" xml:space="preserve">
-    <value>v2ray Full Config Template</value>
+    <value>Core Full Config Template</value>
   </data>
   <data name="TbRayFullConfigTemplateDesc" xml:space="preserve">
     <value>Add Outbound Config Only, routing.balancers and routing.rules.outboundTag, Click to view the document</value>
