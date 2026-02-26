@@ -416,7 +416,7 @@ public class MainWindowViewModel : MyReactiveObject
     private static string ResolveCountryName(string remarks, string address, string subscriptionName)
     {
         var source = $"{remarks} {address} {subscriptionName}".ToLowerInvariant();
-        if (source.IsNullOrWhiteSpace())
+        if (string.IsNullOrWhiteSpace(source))
         {
             return "Не определена";
         }
@@ -549,7 +549,7 @@ public class MainWindowViewModel : MyReactiveObject
 
     private static List<string> ExtractSubscriptionUrls(string rawData)
     {
-        if (rawData.IsNullOrWhiteSpace())
+        if (string.IsNullOrWhiteSpace(rawData))
         {
             return [];
         }
