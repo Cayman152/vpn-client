@@ -379,7 +379,6 @@ jobs:
             }
             New-Item -ItemType Directory -Path $dmgRoot -Force | Out-Null
             Copy-Item -Path $appRoot -Destination $dmgRoot -Recurse -Force
-            & /bin/ln -s /Applications (Join-Path $dmgRoot "Applications")
 
             New-Item -ItemType Directory -Path $env:ArtifactDir -Force | Out-Null
             if (Test-Path $DmgPath) {
