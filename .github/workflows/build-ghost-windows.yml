@@ -294,27 +294,6 @@ jobs:
             Move-Item -Path $builtInstaller.FullName -Destination $env:SetupPath64 -Force
           }
 
-      - name: Remove legacy portable asset from rolling release
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release delete-asset "$env:RollingReleaseTag" "GhostVPN-windows-x64.zip" --repo "${{ github.repository }}" --yes 2>$null
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "Legacy ZIP asset not found in rolling release (or release does not exist yet)."
-          }
-
-      - name: Remove legacy portable asset from tagged release
-        if: ${{ github.event.inputs.release_tag != '' }}
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release delete-asset "${{ github.event.inputs.release_tag }}" "GhostVPN-windows-x64.zip" --repo "${{ github.repository }}" --yes 2>$null
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "Legacy ZIP asset not found in tagged release."
-          }
-
       - name: Upload windows artifacts
         uses: actions/upload-artifact@v4
         with:
