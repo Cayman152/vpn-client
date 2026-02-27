@@ -1,6 +1,6 @@
 # Ghost VPN
 
-Собственный VPN-клиент для Windows и macOS (с фокусом на простое подключение и маршрутизацию по правилам).
+Собственный VPN-клиент для Windows, macOS и Android (с фокусом на простое подключение и маршрутизацию по правилам).
 
 ## Быстро скачать
 
@@ -12,6 +12,17 @@
 - macOS Apple Silicon (arm64): [GhostVPN-macOS-arm64.pkg](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.pkg)
 - macOS Intel (x64): [GhostVPN-macOS-x64.pkg](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-x64.pkg)
 - Страница релиза: [ghost-vpn-latest](https://github.com/Cayman152/vpn-client/releases/tag/ghost-vpn-latest)
+
+## Android
+
+- Android-модуль находится в `GhostVPN.Android`.
+- Интерфейс адаптивный: телефонный режим и планшетный режим.
+- В текущей версии реализованы:
+  - Главная с кнопкой подключения и логами.
+  - Конфигурации (импорт ссылок, выбор активной, удаление).
+  - Настройка правил (DIRECT/PROXY пресеты).
+  - Вкладка «О программе» с кнопкой Telegram.
+- Инструкция запуска в Android Studio: `GhostVPN.Android/README-ANDROID.md`.
 
 ## Поддерживаемые ядра
 
@@ -29,6 +40,12 @@
 - Артефакты после успешной сборки:
   - `GhostVPN-macOS-arm64.pkg`
   - `GhostVPN-macOS-x64.pkg`
+
+## Сборка Android
+
+- Открыть в Android Studio папку `GhostVPN.Android`.
+- Сборка APK: `Build > Build Bundle(s) / APK(s) > Build APK(s)`.
+- Либо CLI: `gradle -p GhostVPN.Android :app:assembleRelease`.
 
 ## Поддержка
 
