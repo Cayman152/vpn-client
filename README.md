@@ -30,6 +30,17 @@
   - `GhostVPN-macOS-arm64.pkg`
   - `GhostVPN-macOS-x64.pkg`
 
+## Подпись И Notarization macOS
+
+- Чтобы сборка выходила с Developer ID подписью и без предупреждений Gatekeeper, добавь в GitHub `Settings -> Secrets and variables -> Actions`:
+- `MACOS_SIGN_CERT_BASE64` (base64 от `.p12` c сертификатами Developer ID Application + Installer)
+- `MACOS_SIGN_CERT_PASSWORD`
+- `MACOS_SIGN_IDENTITY_APP` (пример: `Developer ID Application: Your Name (TEAMID)`)
+- `MACOS_SIGN_IDENTITY_INSTALLER` (пример: `Developer ID Installer: Your Name (TEAMID)`)
+- `APPLE_ID`
+- `APPLE_APP_PASSWORD` (app-specific password для notarization)
+- `APPLE_TEAM_ID`
+
 ## Поддержка
 
 - Telegram: [nkvv_ghost_bot](https://t.me/nkvv_ghost_bot)

@@ -37,6 +37,34 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Setup Apple signing keychain
+        if: ${{ secrets.MACOS_SIGN_CERT_BASE64 != '' && secrets.MACOS_SIGN_CERT_PASSWORD != '' }}
+        shell: bash
+        env:
+          MACOS_SIGN_CERT_BASE64: ${{ secrets.MACOS_SIGN_CERT_BASE64 }}
+          MACOS_SIGN_CERT_PASSWORD: ${{ secrets.MACOS_SIGN_CERT_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          KEYCHAIN_PATH="$RUNNER_TEMP/ghostvpn-signing.keychain-db"
+          CERT_PATH="$RUNNER_TEMP/ghostvpn-signing.p12"
+          KEYCHAIN_PASSWORD="$(uuidgen | tr '[:upper:]' '[:lower:]')"
+
+          CERT_PATH="$CERT_PATH" python3 -c "import base64, os, pathlib; pathlib.Path(os.environ['CERT_PATH']).write_bytes(base64.b64decode(os.environ['MACOS_SIGN_CERT_BASE64']))"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$MACOS_SIGN_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/productsign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+          echo "MACOS_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> "$GITHUB_ENV"
+          echo "MACOS_KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> "$GITHUB_ENV"
+          echo "HAS_DEVELOPER_SIGNING=1" >> "$GITHUB_ENV"
+
       - name: Resolve source paths
         shell: pwsh
         run: |
@@ -297,6 +325,9 @@ jobs:
 
       - name: Package macOS PKG installers
         shell: pwsh
+        env:
+          MACOS_SIGN_IDENTITY_APP: ${{ secrets.MACOS_SIGN_IDENTITY_APP }}
+          MACOS_SIGN_IDENTITY_INSTALLER: ${{ secrets.MACOS_SIGN_IDENTITY_INSTALLER }}
         run: |
           function New-MacPkg {
             param(
@@ -373,8 +404,14 @@ jobs:
               }
             }
 
-            # Ad-hoc sign the bundle to avoid Gatekeeper "app is damaged" errors on unsigned artifacts.
-            & /usr/bin/codesign --force --deep --sign - --timestamp=none $appRoot
+            $hasDeveloperSigning = $env:HAS_DEVELOPER_SIGNING -eq "1" -and -not [string]::IsNullOrWhiteSpace($env:MACOS_SIGN_IDENTITY_APP)
+            if ($hasDeveloperSigning) {
+              & /usr/bin/codesign --force --deep --options runtime --sign $env:MACOS_SIGN_IDENTITY_APP --timestamp $appRoot
+            }
+            else {
+              # Fallback for cases when signing secrets are not configured.
+              & /usr/bin/codesign --force --deep --sign - --timestamp=none $appRoot
+            }
             & /usr/bin/codesign --verify --deep --strict --verbose=2 $appRoot
 
             $pkgRoot = Join-Path $env:RUNNER_TEMP "GhostVPN-$ArchLabel-pkg-root"
@@ -389,9 +426,22 @@ jobs:
             if (Test-Path $PkgPath) {
               Remove-Item -Path $PkgPath -Force
             }
+            $unsignedPkgPath = Join-Path $env:RUNNER_TEMP "GhostVPN-$ArchLabel-unsigned.pkg"
+            if (Test-Path $unsignedPkgPath) {
+              Remove-Item -Path $unsignedPkgPath -Force
+            }
 
             $pkgIdentifier = "com.ghostvpn.client.$ArchLabel"
-            & /usr/bin/pkgbuild --root $pkgRoot --identifier $pkgIdentifier --version $env:APP_VERSION --install-location "/" $PkgPath
+            & /usr/bin/pkgbuild --root $pkgRoot --identifier $pkgIdentifier --version $env:APP_VERSION --install-location "/" $unsignedPkgPath
+
+            $hasInstallerSigning = $env:HAS_DEVELOPER_SIGNING -eq "1" -and -not [string]::IsNullOrWhiteSpace($env:MACOS_SIGN_IDENTITY_INSTALLER)
+            if ($hasInstallerSigning) {
+              & /usr/bin/productsign --sign $env:MACOS_SIGN_IDENTITY_INSTALLER --timestamp $unsignedPkgPath $PkgPath
+            }
+            else {
+              Move-Item -Path $unsignedPkgPath -Destination $PkgPath -Force
+            }
+
             if (-not (Test-Path $PkgPath)) {
               throw "PKG was not created: $PkgPath"
             }
@@ -399,6 +449,27 @@ jobs:
 
           New-MacPkg -OutPath $env:OutputPathArm64 -ArchLabel "arm64" -PkgPath $env:SetupPathArm64
           New-MacPkg -OutPath $env:OutputPathX64 -ArchLabel "x64" -PkgPath $env:SetupPathX64
+
+      - name: Notarize and staple macOS installers
+        if: ${{ secrets.APPLE_ID != '' && secrets.APPLE_APP_PASSWORD != '' && secrets.APPLE_TEAM_ID != '' }}
+        shell: bash
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          SETUP_PATH_ARM64: ${{ env.SetupPathArm64 }}
+          SETUP_PATH_X64: ${{ env.SetupPathX64 }}
+        run: |
+          set -euo pipefail
+          for pkg in "$SETUP_PATH_ARM64" "$SETUP_PATH_X64"; do
+            xcrun notarytool submit "$pkg" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait
+            xcrun stapler staple "$pkg"
+            xcrun stapler validate "$pkg"
+          done
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
@@ -471,3 +542,12 @@ jobs:
           files: |
             ${{ env.SetupPathArm64 }}
             ${{ env.SetupPathX64 }}
+
+      - name: Cleanup temporary signing keychain
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${MACOS_KEYCHAIN_PATH:-}" ] && [ -f "${MACOS_KEYCHAIN_PATH}" ]; then
+            security delete-keychain "${MACOS_KEYCHAIN_PATH}" || true
+          fi
