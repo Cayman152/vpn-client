@@ -1,11 +1,5 @@
 [
   {
-    "remarks": "Блокировать UDP 443",
-    "outboundTag": "block",
-    "port": "443",
-    "network": "udp"
-  },
-  {
     "remarks": "Прокси: Google",
     "outboundTag": "proxy",
     "domain": [
