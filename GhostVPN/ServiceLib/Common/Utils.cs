@@ -1196,6 +1196,52 @@ public class Utils
         return false;
     }
 
+    public static bool ClearMacQuarantine(string? fileName, bool recursive = true)
+    {
+        try
+        {
+            if (!IsMacOS() || fileName.IsNullOrEmpty())
+            {
+                return false;
+            }
+
+            if (!File.Exists(fileName) && !Directory.Exists(fileName))
+            {
+                return false;
+            }
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "/usr/bin/xattr",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            if (recursive)
+            {
+                process.StartInfo.ArgumentList.Add("-r");
+            }
+            process.StartInfo.ArgumentList.Add("-d");
+            process.StartInfo.ArgumentList.Add("com.apple.quarantine");
+            process.StartInfo.ArgumentList.Add(fileName);
+
+            process.Start();
+            process.WaitForExit(5000);
+            return process.ExitCode == 0;
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog("ClearMacQuarantine", ex);
+        }
+
+        return false;
+    }
+
     public static async Task<string?> GetLinuxFontFamily(string lang)
     {
         // var arg = new List<string>() { "-c", $"fc-list :lang={lang} family" };

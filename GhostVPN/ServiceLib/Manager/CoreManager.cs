@@ -46,8 +46,17 @@ public class CoreManager
                     if (File.Exists(exe))
                     {
                         await Utils.SetLinuxChmod(exe);
+                        if (Utils.IsMacOS())
+                        {
+                            Utils.ClearMacQuarantine(exe, false);
+                        }
                     }
                 }
+            }
+
+            if (Utils.IsMacOS())
+            {
+                Utils.ClearMacQuarantine(Utils.GetBinPath(""), true);
             }
         }
     }
@@ -495,6 +504,18 @@ public class CoreManager
 
     private async Task<ProcessService?> RunProcessNormal(string fileName, CoreInfo? coreInfo, string configPath, bool displayLog)
     {
+        if (Utils.IsMacOS())
+        {
+            Utils.SetUnixFileMode(fileName);
+            Utils.ClearMacQuarantine(fileName, false);
+            var coreDir = Path.GetDirectoryName(fileName);
+            if (coreDir.IsNotEmpty())
+            {
+                Utils.ClearMacQuarantine(coreDir, true);
+            }
+            Utils.ClearMacQuarantine(Utils.GetBinPath(""), true);
+        }
+
         var environmentVars = new Dictionary<string, string>();
         foreach (var kv in coreInfo.Environment)
         {
