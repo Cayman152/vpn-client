@@ -12,7 +12,7 @@
         <Nullable>annotations</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <Authors>Ghost VPN</Authors>
-        <PackageLicenseExpression>GPL-3.0</PackageLicenseExpression>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <Copyright>Copyright © 2017-$([System.DateTime]::UtcNow.Year) $(Authors)</Copyright>
         <InvariantGlobalization>false</InvariantGlobalization>
     </PropertyGroup>
