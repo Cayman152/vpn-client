@@ -44,8 +44,8 @@ object XrayConfigFactory {
 
             put("dns", buildJsonObject {
                 putJsonArray("servers") {
-                    add("1.1.1.1")
-                    add("8.8.8.8")
+                    add(JsonPrimitive("1.1.1.1"))
+                    add(JsonPrimitive("8.8.8.8"))
                 }
             })
         }
@@ -66,8 +66,8 @@ object XrayConfigFactory {
             put("sniffing", buildJsonObject {
                 put("enabled", true)
                 putJsonArray("destOverride") {
-                    add("http")
-                    add("tls")
+                    add(JsonPrimitive("http"))
+                    add(JsonPrimitive("tls"))
                 }
             })
         }
