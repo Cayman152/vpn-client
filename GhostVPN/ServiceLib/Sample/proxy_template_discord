@@ -4,15 +4,22 @@
     "outboundTag": "proxy",
     "domain": [
       "domain:discord.com",
+      "domain:canary.discord.com",
+      "domain:ptb.discord.com",
+      "domain:status.discord.com",
       "domain:discord.gg",
       "domain:discordapp.com",
       "domain:discordapp.net",
       "domain:gateway.discord.gg",
       "domain:media.discordapp.net",
       "domain:discord.media",
+      "domain:rtc.discord.media",
+      "domain:router.discord.media",
       "domain:cdn.discordapp.com",
+      "domain:cdn.discordapp.net",
       "domain:images-ext-1.discordapp.net",
-      "domain:images-ext-2.discordapp.net"
+      "domain:images-ext-2.discordapp.net",
+      "full:discord-attachments-uploads-prd.storage.googleapis.com"
     ]
   }
 ]
