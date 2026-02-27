@@ -78,7 +78,8 @@ enum class AppDestination(val title: String, val icon: ImageVector) {
 @Composable
 fun GhostVpnApp(
     windowSizeClass: WindowSizeClass,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    onToggleVpn: (Boolean) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val activeConfig = state.configurations.firstOrNull { it.id == state.activeConfigId }
@@ -131,7 +132,7 @@ fun GhostVpnApp(
                     AppDestination.Home -> HomeScreen(
                         state = state,
                         activeConfig = activeConfig,
-                        onToggle = viewModel::toggleConnection,
+                        onToggle = { onToggleVpn(!state.isConnected) },
                         onGoConfigurations = { destination = AppDestination.Configurations },
                         onGoRules = { destination = AppDestination.Rules },
                         onClearLogs = viewModel::clearLogs

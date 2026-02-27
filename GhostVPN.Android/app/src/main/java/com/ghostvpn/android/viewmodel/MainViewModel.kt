@@ -7,12 +7,15 @@ import androidx.lifecycle.viewModelScope
 import com.ghostvpn.android.data.AppState
 import com.ghostvpn.android.data.AppStateStore
 import com.ghostvpn.android.data.DEFAULT_CONFIG_ID
+import com.ghostvpn.android.data.VpnStartPayload
 import com.ghostvpn.android.data.VpnConfiguration
 import com.ghostvpn.android.data.defaultLatviaConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalTime
@@ -23,6 +26,7 @@ class MainViewModel(
     private val store: AppStateStore
 ) : ViewModel() {
 
+    private val json = Json { encodeDefaults = true }
     private val _uiState = MutableStateFlow(AppState())
     val uiState: StateFlow<AppState> = _uiState.asStateFlow()
 
@@ -34,24 +38,26 @@ class MainViewModel(
         }
     }
 
-    fun toggleConnection() {
+    fun buildVpnStartPayloadJson(): String? {
         val current = _uiState.value
-        val active = current.configurations.firstOrNull { it.id == current.activeConfigId }
-        if (active == null) {
-            appendLog("Нет активной конфигурации")
-            return
+        val active = current.configurations.firstOrNull { it.id == current.activeConfigId } ?: return null
+        return json.encodeToString(VpnStartPayload(active, current.routingPresets))
+    }
+
+    fun onVpnStateChanged(isConnected: Boolean, message: String) {
+        val current = _uiState.value
+        val normalizedMessage = message.trim()
+        val nextState = if (current.isConnected == isConnected) {
+            current
+        } else {
+            current.copy(isConnected = isConnected)
         }
 
-        val nextState = current.copy(isConnected = !current.isConnected)
-        persist(
-            nextState.withLog(
-                if (nextState.isConnected) {
-                    "Подключение: ${active.name} (${active.protocol})"
-                } else {
-                    "VPN отключен"
-                }
-            )
-        )
+        if (normalizedMessage.isNotBlank()) {
+            persist(nextState.withLog(normalizedMessage))
+        } else {
+            persist(nextState)
+        }
     }
 
     fun activateConfiguration(configId: String) {
