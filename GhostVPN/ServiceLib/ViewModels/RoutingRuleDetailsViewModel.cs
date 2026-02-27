@@ -2,6 +2,17 @@ namespace ServiceLib.ViewModels;
 
 public class RoutingRuleDetailsViewModel : MyReactiveObject
 {
+    private static readonly string[] _domainExpressionPrefixes =
+    [
+        "domain:",
+        "full:",
+        "keyword:",
+        "regexp:",
+        "geosite:",
+        "ext:",
+        "ext-domain:"
+    ];
+
     [Reactive]
     public RulesItem SelectedSource { get; set; }
 
@@ -48,7 +59,7 @@ public class RoutingRuleDetailsViewModel : MyReactiveObject
         SelectedSource.Protocol = null;
         SelectedSource.InboundTag = null;
 
-        Domain = Utils.List2String(SelectedSource.Domain, true);
+        Domain = ToEditorDomainText(SelectedSource.Domain);
         IP = Utils.List2String(SelectedSource.Ip, true);
         Process = Utils.List2String(SelectedSource.Process, true);
         RuleType = SelectedSource.RuleType?.ToString();
@@ -60,7 +71,7 @@ public class RoutingRuleDetailsViewModel : MyReactiveObject
         IP = Utils.Convert2Comma(IP);
         Process = Utils.Convert2Comma(Process);
 
-        SelectedSource.Domain = Utils.String2List(Domain);
+        SelectedSource.Domain = ParseEditorDomainText(Domain);
         SelectedSource.Ip = Utils.String2List(IP);
         SelectedSource.Process = Utils.String2List(Process);
         SelectedSource.Enabled = true;
@@ -81,5 +92,67 @@ public class RoutingRuleDetailsViewModel : MyReactiveObject
         }
         //NoticeHandler.Instance.Enqueue(ResUI.OperationSuccess);
         await _updateView?.Invoke(EViewAction.CloseWindow, null);
+    }
+
+    private static string ToEditorDomainText(List<string>? domains)
+    {
+        if (domains == null || domains.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var formatted = domains
+            .Select(StripDomainPrefixForEditor)
+            .ToList();
+        return Utils.List2String(formatted, true);
+    }
+
+    private static string StripDomainPrefixForEditor(string domain)
+    {
+        if (domain.IsNullOrEmpty())
+        {
+            return domain;
+        }
+
+        return domain.StartsWith("domain:", StringComparison.OrdinalIgnoreCase)
+            ? domain.Substring("domain:".Length)
+            : domain;
+    }
+
+    private static List<string>? ParseEditorDomainText(string? rawDomainText)
+    {
+        var domains = Utils.String2List(rawDomainText);
+        if (domains == null || domains.Count == 0)
+        {
+            return null;
+        }
+
+        var normalized = domains
+            .Select(AddPrefixForPlainDomain)
+            .Where(d => !d.IsNullOrEmpty())
+            .ToList();
+
+        return normalized.Count == 0 ? null : normalized;
+    }
+
+    private static string AddPrefixForPlainDomain(string domain)
+    {
+        if (domain.IsNullOrEmpty())
+        {
+            return domain;
+        }
+
+        var value = domain.Trim();
+        if (value.IsNullOrEmpty())
+        {
+            return string.Empty;
+        }
+
+        if (value.StartsWith('#') || _domainExpressionPrefixes.Any(prefix => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
+        {
+            return value;
+        }
+
+        return Utils.IsDomain(value) ? $"domain:{value}" : value;
     }
 }

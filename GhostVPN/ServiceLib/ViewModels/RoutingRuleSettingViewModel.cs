@@ -2,6 +2,7 @@ namespace ServiceLib.ViewModels;
 
 public class RoutingRuleSettingViewModel : MyReactiveObject
 {
+    private const string DomainPrefix = "domain:";
     private List<RulesItem> _rules;
 
     [Reactive]
@@ -122,6 +123,12 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
 
         foreach (var item in _rules)
         {
+            var displayDomains = (item.Domain ?? [])
+                .Select(domain => domain.StartsWith(DomainPrefix, StringComparison.OrdinalIgnoreCase)
+                    ? domain.Substring(DomainPrefix.Length)
+                    : domain)
+                .ToList();
+
             var it = new RulesItemModel()
             {
                 Id = item.Id,
@@ -131,7 +138,7 @@ public class RoutingRuleSettingViewModel : MyReactiveObject
                 Network = item.Network,
                 Protocols = Utils.List2String(item.Protocol),
                 InboundTags = Utils.List2String(item.InboundTag),
-                Domains = Utils.List2String((item.Domain ?? []).Concat(item.Ip ?? []).ToList().Concat(item.Process ?? []).ToList()),
+                Domains = Utils.List2String(displayDomains.Concat(item.Ip ?? []).ToList().Concat(item.Process ?? []).ToList()),
                 Enabled = item.Enabled,
                 Remarks = item.Remarks,
             };
