@@ -18,8 +18,8 @@ env:
   OutputPathArm64: "${{ github.workspace }}/build/ghost-vpn-macos-arm64"
   OutputPathX64: "${{ github.workspace }}/build/ghost-vpn-macos-x64"
   ArtifactDir: "${{ github.workspace }}/artifacts"
-  SetupPathArm64: "${{ github.workspace }}/artifacts/GhostVPN-macOS-arm64.dmg"
-  SetupPathX64: "${{ github.workspace }}/artifacts/GhostVPN-macOS-x64.dmg"
+  SetupPathArm64: "${{ github.workspace }}/artifacts/GhostVPN-macOS-arm64.pkg"
+  SetupPathX64: "${{ github.workspace }}/artifacts/GhostVPN-macOS-x64.pkg"
   RollingReleaseTag: "ghost-vpn-latest"
 
 jobs:
@@ -295,14 +295,14 @@ jobs:
           Assert-CoreFiles -OutPath $env:OutputPathArm64 -ArchLabel "osx-arm64"
           Assert-CoreFiles -OutPath $env:OutputPathX64 -ArchLabel "osx-x64"
 
-      - name: Package macOS DMG installers
+      - name: Package macOS PKG installers
         shell: pwsh
         run: |
-          function New-MacDmg {
+          function New-MacPkg {
             param(
               [string]$OutPath,
               [string]$ArchLabel,
-              [string]$DmgPath
+              [string]$PkgPath
             )
 
             $bundleRoot = Join-Path $env:RUNNER_TEMP "GhostVPN-$ArchLabel-bundle"
@@ -377,26 +377,28 @@ jobs:
             & /usr/bin/codesign --force --deep --sign - --timestamp=none $appRoot
             & /usr/bin/codesign --verify --deep --strict --verbose=2 $appRoot
 
-            $dmgRoot = Join-Path $env:RUNNER_TEMP "GhostVPN-$ArchLabel-dmg-root"
-            if (Test-Path $dmgRoot) {
-              Remove-Item -Path $dmgRoot -Recurse -Force
+            $pkgRoot = Join-Path $env:RUNNER_TEMP "GhostVPN-$ArchLabel-pkg-root"
+            if (Test-Path $pkgRoot) {
+              Remove-Item -Path $pkgRoot -Recurse -Force
             }
-            New-Item -ItemType Directory -Path $dmgRoot -Force | Out-Null
-            Copy-Item -Path $appRoot -Destination $dmgRoot -Recurse -Force
+            $applicationsDir = Join-Path $pkgRoot "Applications"
+            New-Item -ItemType Directory -Path $applicationsDir -Force | Out-Null
+            Copy-Item -Path $appRoot -Destination $applicationsDir -Recurse -Force
 
             New-Item -ItemType Directory -Path $env:ArtifactDir -Force | Out-Null
-            if (Test-Path $DmgPath) {
-              Remove-Item -Path $DmgPath -Force
+            if (Test-Path $PkgPath) {
+              Remove-Item -Path $PkgPath -Force
             }
 
-            & /usr/bin/hdiutil create -volname "Ghost VPN Installer" -srcfolder $dmgRoot -ov -format UDZO $DmgPath
-            if (-not (Test-Path $DmgPath)) {
-              throw "DMG was not created: $DmgPath"
+            $pkgIdentifier = "com.ghostvpn.client.$ArchLabel"
+            & /usr/bin/pkgbuild --root $pkgRoot --identifier $pkgIdentifier --version $env:APP_VERSION --install-location "/" $PkgPath
+            if (-not (Test-Path $PkgPath)) {
+              throw "PKG was not created: $PkgPath"
             }
           }
 
-          New-MacDmg -OutPath $env:OutputPathArm64 -ArchLabel "arm64" -DmgPath $env:SetupPathArm64
-          New-MacDmg -OutPath $env:OutputPathX64 -ArchLabel "x64" -DmgPath $env:SetupPathX64
+          New-MacPkg -OutPath $env:OutputPathArm64 -ArchLabel "arm64" -PkgPath $env:SetupPathArm64
+          New-MacPkg -OutPath $env:OutputPathX64 -ArchLabel "x64" -PkgPath $env:SetupPathX64
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
@@ -414,12 +416,12 @@ jobs:
           ## Ghost VPN macOS build artifacts
           - Artifact name: ghost-vpn-macos
           - Files:
-            - GhostVPN-macOS-arm64.dmg
-            - GhostVPN-macOS-x64.dmg
+            - GhostVPN-macOS-arm64.pkg
+            - GhostVPN-macOS-x64.pkg
           - Rolling release page: https://github.com/${{ github.repository }}/releases/tag/${{ env.RollingReleaseTag }}
           "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
-      - name: Remove legacy macOS zip assets from rolling release
+      - name: Remove legacy macOS non-pkg assets from rolling release
         uses: actions/github-script@v7
         with:
           script: |
@@ -434,7 +436,7 @@ jobs:
             }
             const assets = release.data.assets || [];
             for (const asset of assets) {
-              if (/^GhostVPN-macOS-(arm64|x64)\.zip$/i.test(asset.name)) {
+              if (/^GhostVPN-macOS-(arm64|x64)\.(zip|dmg)$/i.test(asset.name)) {
                 core.info(`Deleting legacy asset: ${asset.name}`);
                 await github.rest.repos.deleteReleaseAsset({
                   owner,

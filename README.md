@@ -9,8 +9,8 @@
 ## Скачать
 
 - Установщик Windows x64: [GhostVPN-Setup-x64.exe](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
-- macOS Apple Silicon (arm64): [GhostVPN-macOS-arm64.dmg](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.dmg)
-- macOS Intel (x64): [GhostVPN-macOS-x64.dmg](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-x64.dmg)
+- macOS Apple Silicon (arm64): [GhostVPN-macOS-arm64.pkg](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.pkg)
+- macOS Intel (x64): [GhostVPN-macOS-x64.pkg](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-x64.pkg)
 - Страница релиза: [ghost-vpn-latest](https://github.com/Cayman152/vpn-client/releases/tag/ghost-vpn-latest)
 
 ## Поддерживаемые ядра
@@ -27,8 +27,8 @@
 
 - Workflow: `Ghost VPN macOS Build`
 - Артефакты после успешной сборки:
-  - `GhostVPN-macOS-arm64.dmg`
-  - `GhostVPN-macOS-x64.dmg`
+  - `GhostVPN-macOS-arm64.pkg`
+  - `GhostVPN-macOS-x64.pkg`
 
 ## Поддержка
 
