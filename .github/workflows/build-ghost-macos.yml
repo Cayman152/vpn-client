@@ -402,7 +402,7 @@ jobs:
           New-MacPkg -OutPath $env:OutputPathX64 -ArchLabel "x64" -PkgPath $env:SetupPathX64
 
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ghost-vpn-macos
           path: |
