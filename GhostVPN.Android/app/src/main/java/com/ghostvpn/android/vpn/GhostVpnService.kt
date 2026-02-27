@@ -8,7 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.VpnService
 import android.os.Build
-import android.system.Os
+import android.os.ParcelFileDescriptor
 import androidx.core.app.NotificationCompat
 import com.ghostvpn.android.MainActivity
 import com.ghostvpn.android.R
@@ -180,7 +180,7 @@ class GhostVpnService : VpnService() {
         vpnProcess = null
 
         vpnTunFd?.let { fd ->
-            runCatching { Os.close(fd) }
+            runCatching { ParcelFileDescriptor.adoptFd(fd).close() }
         }
         vpnTunFd = null
     }

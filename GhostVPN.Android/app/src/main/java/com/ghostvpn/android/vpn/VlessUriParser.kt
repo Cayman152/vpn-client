@@ -1,6 +1,8 @@
 package com.ghostvpn.android.vpn
 
-import android.net.Uri
+import java.net.URI
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 data class VlessEndpoint(
     val id: String,
@@ -25,19 +27,22 @@ data class VlessEndpoint(
 object VlessUriParser {
 
     fun parse(rawUrl: String): VlessEndpoint {
-        val uri = Uri.parse(rawUrl.trim())
+        val source = rawUrl.trim()
+        val uri = URI(source)
         require(uri.scheme.equals("vless", ignoreCase = true)) { "Поддерживается только VLESS" }
 
-        val userInfo = uri.encodedUserInfo.orEmpty()
-        val id = userInfo.substringBefore(':').ifBlank {
+        val authority = uri.rawAuthority.orEmpty()
+        val userInfo = authority.substringBefore('@', "")
+        val id = decode(userInfo.substringBefore(':', "")).ifBlank {
             throw IllegalArgumentException("VLESS URL не содержит UUID")
         }
 
-        val host = uri.host.orEmpty()
+        val host = uri.host ?: authority.substringAfter('@', "").substringBefore(':')
         require(host.isNotBlank()) { "VLESS URL не содержит host" }
 
-        val security = query(uri, "security")?.lowercase() ?: "none"
-        val network = query(uri, "type")?.lowercase() ?: "tcp"
+        val query = parseQuery(uri.rawQuery)
+        val security = query["security"]?.lowercase() ?: "none"
+        val network = query["type"]?.lowercase() ?: "tcp"
 
         return VlessEndpoint(
             id = id,
@@ -46,25 +51,40 @@ object VlessUriParser {
             address = host,
             security = security,
             network = network,
-            sni = query(uri, "sni") ?: query(uri, "host"),
-            flow = query(uri, "flow"),
-            encryption = query(uri, "encryption") ?: "none",
-            wsPath = query(uri, "path"),
-            wsHost = query(uri, "host"),
-            grpcServiceName = query(uri, "serviceName") ?: query(uri, "service_name"),
-            grpcAuthority = query(uri, "authority"),
-            realityPublicKey = query(uri, "pbk"),
-            realityShortId = query(uri, "sid"),
-            realityFingerprint = query(uri, "fp"),
-            realitySpiderX = query(uri, "spx")
+            sni = query["sni"] ?: query["host"],
+            flow = query["flow"],
+            encryption = query["encryption"] ?: "none",
+            wsPath = query["path"],
+            wsHost = query["host"],
+            grpcServiceName = query["serviceName"] ?: query["service_name"],
+            grpcAuthority = query["authority"],
+            realityPublicKey = query["pbk"],
+            realityShortId = query["sid"],
+            realityFingerprint = query["fp"],
+            realitySpiderX = query["spx"]
         )
     }
 
-    private fun query(uri: Uri, key: String): String? {
-        val value = uri.getQueryParameter(key)
-        if (value.isNullOrBlank()) {
-            return null
+    private fun parseQuery(rawQuery: String?): Map<String, String> {
+        if (rawQuery.isNullOrBlank()) {
+            return emptyMap()
         }
-        return value.trim()
+
+        return rawQuery.split('&')
+            .mapNotNull { part ->
+                if (part.isBlank()) return@mapNotNull null
+                val key = decode(part.substringBefore('=')).trim()
+                if (key.isBlank()) return@mapNotNull null
+                val value = decode(part.substringAfter('=', "")).trim()
+                key to value
+            }
+            .toMap()
+    }
+
+    private fun decode(value: String): String {
+        if (value.isEmpty()) {
+            return value
+        }
+        return URLDecoder.decode(value, StandardCharsets.UTF_8.name())
     }
 }
