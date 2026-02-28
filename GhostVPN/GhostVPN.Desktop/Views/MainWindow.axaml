@@ -152,13 +152,21 @@
                             Margin="8"
                             Classes="GhostShellCard"
                             Padding="20">
-                            <Button
-                                x:Name="btnTelegramBot"
-                                Classes="PrimaryAction"
-                                Width="220"
+                            <StackPanel
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
-                                Content="Бот в Telegram" />
+                                Spacing="10">
+                                <Button
+                                    x:Name="btnTelegramBot"
+                                    Classes="PrimaryAction"
+                                    Width="220"
+                                    Content="Бот в Telegram" />
+                                <Button
+                                    x:Name="btnGithub"
+                                    Classes="SecondaryAction"
+                                    Width="220"
+                                    Content="GitHub" />
+                            </StackPanel>
                         </Border>
                     </TabItem>
                 </TabControl>

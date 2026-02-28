@@ -24,6 +24,7 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
         KeyDown += MainWindow_KeyDown;
         menuBackupAndRestore.Click += MenuBackupAndRestore_Click;
         btnTelegramBot.Click += BtnTelegramBot_Click;
+        btnGithub.Click += BtnGithub_Click;
         ApplyGhostUiDefaults();
         _ = new ThemeSettingViewModel();
 
@@ -276,6 +277,11 @@ public partial class MainWindow : WindowBase<MainWindowViewModel>
     private void BtnTelegramBot_Click(object? sender, RoutedEventArgs e)
     {
         ProcUtils.ProcessStart("https://t.me/nkvv_ghost_bot");
+    }
+
+    private void BtnGithub_Click(object? sender, RoutedEventArgs e)
+    {
+        ProcUtils.ProcessStart("https://github.com/Cayman152/vpn-client");
     }
 
     private void Shutdown(bool obj)
