@@ -91,9 +91,44 @@ jobs:
             "User-Agent" = "ghost-vpn-build"
             "Accept" = "application/vnd.github+json"
           }
+          if ($env:GITHUB_TOKEN) {
+            $headers["Authorization"] = "Bearer $env:GITHUB_TOKEN"
+          }
 
           $tmpRoot = Join-Path $env:RUNNER_TEMP "ghostvpn-cores-macos"
           New-Item -ItemType Directory -Path $tmpRoot -Force | Out-Null
+
+          function Get-LatestReleaseWithAssets {
+            param(
+              [string]$Repo,
+              [int]$MaxAttempts = 5
+            )
+
+            for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+              try {
+                $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers $headers
+                if ($release -and $release.assets -and $release.assets.Count -gt 0) {
+                  return $release
+                }
+
+                $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases?per_page=5" -Headers $headers
+                $fallback = $releases | Where-Object { $_.assets -and $_.assets.Count -gt 0 } | Select-Object -First 1
+                if ($fallback) {
+                  return $fallback
+                }
+
+                throw "Release metadata has no assets for repository '$Repo'"
+              }
+              catch {
+                if ($attempt -ge $MaxAttempts) {
+                  throw "Failed to query release metadata for '$Repo' after $MaxAttempts attempts. Last error: $($_.Exception.Message)"
+                }
+                $sleepSec = [Math]::Min(20, 2 * $attempt)
+                Write-Host "Release metadata query failed (attempt $attempt/$MaxAttempts), retry in ${sleepSec}s: $($_.Exception.Message)"
+                Start-Sleep -Seconds $sleepSec
+              }
+            }
+          }
 
           function Get-LatestAsset {
             param(
@@ -101,10 +136,7 @@ jobs:
               [string[]]$Patterns
             )
 
-            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers $headers
-            if (-not $release -or -not $release.assets) {
-              throw "Release metadata has no assets for repository '$Repo'"
-            }
+            $release = Get-LatestReleaseWithAssets -Repo $Repo
 
             $asset = $null
             $matchedPattern = $null
