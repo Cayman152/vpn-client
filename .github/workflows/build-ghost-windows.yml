@@ -119,6 +119,8 @@ jobs:
 
       - name: Download core binaries (xray/sing-box)
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           $headers = @{
             "User-Agent" = "ghost-vpn-build"
