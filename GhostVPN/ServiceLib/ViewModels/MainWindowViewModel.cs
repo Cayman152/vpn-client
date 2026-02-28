@@ -916,7 +916,7 @@ public class MainWindowViewModel : MyReactiveObject
             await Task.Run(async () =>
             {
                 await LoadCore();
-                await SysProxyHandler.UpdateSysProxy(_config, false);
+                await UpdateSystemProxyWithCoreStateAsync();
                 await Task.Delay(1000);
             });
             AppEvents.TestServerRequested.Publish();
@@ -961,6 +961,19 @@ public class MainWindowViewModel : MyReactiveObject
     {
         var node = await ConfigHandler.GetDefaultServer(_config);
         await CoreManager.Instance.LoadCore(node);
+    }
+
+    private async Task UpdateSystemProxyWithCoreStateAsync()
+    {
+        if (CoreManager.Instance.IsCoreRunning() || _config.SystemProxyItem.SysProxyType != ESysProxyType.ForcedChange)
+        {
+            await SysProxyHandler.UpdateSysProxy(_config, false);
+            return;
+        }
+
+        _config.SystemProxyItem.SysProxyType = ESysProxyType.ForcedClear;
+        await SysProxyHandler.UpdateSysProxy(_config, true);
+        await ConfigHandler.SaveConfig(_config);
     }
 
     #endregion core job

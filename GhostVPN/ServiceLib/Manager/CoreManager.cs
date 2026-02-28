@@ -12,6 +12,7 @@ public class CoreManager
     private ProcessService? _processService;
     private ProcessService? _processPreService;
     private bool _linuxSudo = false;
+    private int _coreMonitorId;
     private Func<bool, string, Task>? _updateFunc;
     private const string _tag = "CoreHandler";
 
@@ -141,6 +142,8 @@ public class CoreManager
     {
         try
         {
+            System.Threading.Interlocked.Increment(ref _coreMonitorId);
+
             if (_linuxSudo)
             {
                 await CoreAdminManager.Instance.KillProcessAsLinuxSudo();
@@ -186,6 +189,8 @@ public class CoreManager
             return;
         }
         _processService = proc;
+        var monitorId = System.Threading.Interlocked.Increment(ref _coreMonitorId);
+        StartCoreExitMonitor(proc, monitorId);
     }
 
     private async Task CoreStartPreService(ProfileItem node)
@@ -216,6 +221,53 @@ public class CoreManager
     private async Task UpdateFunc(bool notify, string msg)
     {
         await _updateFunc?.Invoke(notify, msg);
+    }
+
+    private void StartCoreExitMonitor(ProcessService processService, int monitorId)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                while (monitorId == _coreMonitorId)
+                {
+                    if (processService.HasExited)
+                    {
+                        await HandleUnexpectedCoreExitAsync(monitorId);
+                        return;
+                    }
+                    await Task.Delay(500);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.SaveLog(_tag, ex);
+            }
+        });
+    }
+
+    private async Task HandleUnexpectedCoreExitAsync(int monitorId)
+    {
+        if (monitorId != _coreMonitorId || _config?.SystemProxyItem == null)
+        {
+            return;
+        }
+        if (_config.SystemProxyItem.SysProxyType != ESysProxyType.ForcedChange)
+        {
+            return;
+        }
+
+        try
+        {
+            _config.SystemProxyItem.SysProxyType = ESysProxyType.ForcedClear;
+            await SysProxyHandler.UpdateSysProxy(_config, true);
+            await ConfigHandler.SaveConfig(_config);
+            await UpdateFunc(true, "Ядро остановлено. Системный прокси отключен.");
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog(_tag, ex);
+        }
     }
 
     #endregion Private
