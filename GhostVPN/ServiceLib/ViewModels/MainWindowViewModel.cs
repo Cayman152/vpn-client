@@ -361,6 +361,15 @@ public class MainWindowViewModel : MyReactiveObject
             return;
         }
 
+        if (!await VerifyTunnelReadyAsync())
+        {
+            AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
+            await CoreManager.Instance.CoreStop();
+            ApplyVpnState(false);
+            NoticeManager.Instance.Enqueue("Сервер не отвечает. Проверьте ссылку, ключи и доступность узла.");
+            return;
+        }
+
         AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedChange);
         ApplyVpnState(true);
         NoticeManager.Instance.Enqueue("VPN включен");
@@ -974,6 +983,34 @@ public class MainWindowViewModel : MyReactiveObject
         _config.SystemProxyItem.SysProxyType = ESysProxyType.ForcedClear;
         await SysProxyHandler.UpdateSysProxy(_config, true);
         await ConfigHandler.SaveConfig(_config);
+    }
+
+    private async Task<bool> VerifyTunnelReadyAsync()
+    {
+        try
+        {
+            var port = AppManager.Instance.GetLocalPort(EInboundProtocol.socks);
+            if (port <= 0)
+            {
+                return false;
+            }
+
+            var testUrl = _config.SpeedTestItem.SpeedPingTestUrl;
+            if (testUrl.IsNullOrEmpty())
+            {
+                testUrl = Global.SpeedPingTestUrls.FirstOrDefault() ?? "https://www.google.com/generate_204";
+            }
+
+            var webProxy = new WebProxy($"socks5://{Global.Loopback}:{port}");
+            var timeout = Math.Clamp(_config.SpeedTestItem.SpeedTestTimeout, 5, 20);
+            var responseTime = await ConnectionHandler.GetRealPingTime(testUrl, webProxy, timeout);
+            return responseTime > 0;
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog("VerifyTunnelReadyAsync", ex);
+            return false;
+        }
     }
 
     #endregion core job

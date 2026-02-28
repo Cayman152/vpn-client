@@ -28,9 +28,6 @@ public static class ProxySettingOSX
             ? customSystemProxyScriptPath
             : await FileUtils.CreateLinuxShellFile(_proxySetFileName, EmbedUtils.GetEmbedText(Global.ProxySetOSXShellFileName), false);
 
-        // TODO: temporarily notify which script is being used
-        NoticeManager.Instance.SendMessage(fileName);
-
         await Utils.GetCliWrapOutput(fileName, args);
     }
 }
