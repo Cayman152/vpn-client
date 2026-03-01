@@ -361,7 +361,7 @@ public class MainWindowViewModel : MyReactiveObject
             return;
         }
 
-        if (!await VerifyTunnelReadyAsync())
+        if (Utils.IsMacOS() && !await VerifyTunnelReadyAsync())
         {
             AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
             await CoreManager.Instance.CoreStop();
