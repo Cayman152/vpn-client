@@ -1017,10 +1017,19 @@ public static class ConfigHandler
 
         var vlessEncryption = profileItem.GetProtocolExtra().VlessEncryption?.TrimEx();
         var flow = profileItem.GetProtocolExtra().Flow?.TrimEx() ?? string.Empty;
+        if (flow.IsNotEmpty() && !Global.Flows.Contains(flow))
+        {
+            flow = string.Empty;
+        }
+        if (profileItem.StreamSecurity != Global.StreamSecurityReality)
+        {
+            flow = string.Empty;
+        }
+
         profileItem.SetProtocolExtra(profileItem.GetProtocolExtra() with
         {
             VlessEncryption = vlessEncryption.IsNullOrEmpty() ? Global.None : vlessEncryption,
-            Flow = Global.Flows.Contains(flow) ? flow : Global.Flows.First(),
+            Flow = flow.NullIfEmpty(),
         });
 
         if (profileItem.Password.IsNullOrEmpty())

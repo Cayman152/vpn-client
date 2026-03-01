@@ -362,7 +362,7 @@ public class MainWindowViewModel : MyReactiveObject
             return;
         }
 
-        if (Utils.IsMacOS() && !await VerifyTunnelReadyAsync())
+        if (!await VerifyTunnelReadyAsync())
         {
             AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
             await CoreManager.Instance.CoreStop();
@@ -1040,7 +1040,9 @@ public class MainWindowViewModel : MyReactiveObject
             probeUrls.AddRange([
                 "https://www.google.com/generate_204",
                 "https://api.github.com",
-                "https://yandex.ru"
+                "https://yandex.ru",
+                "https://www.cloudflare.com/cdn-cgi/trace",
+                "https://www.example.com"
             ]);
             probeUrls = probeUrls
                 .Where(url => url.IsNotEmpty())
@@ -1048,10 +1050,17 @@ public class MainWindowViewModel : MyReactiveObject
                 .ToList();
 
             var webProxy = new WebProxy($"socks5://{Global.Loopback}:{port}");
-            var timeout = Math.Clamp(_config.SpeedTestItem.SpeedTestTimeout, 4, 8);
-            foreach (var url in probeUrls)
+            var timeout = Math.Clamp(_config.SpeedTestItem.SpeedTestTimeout, 2, 5);
+            var tasks = probeUrls
+                .Select(async url => await ConnectionHandler.GetRealPingTime(url, webProxy, timeout))
+                .ToList();
+
+            while (tasks.Count > 0)
             {
-                var responseTime = await ConnectionHandler.GetRealPingTime(url, webProxy, timeout);
+                var completed = await Task.WhenAny(tasks);
+                tasks.Remove(completed);
+
+                var responseTime = await completed;
                 if (responseTime > 0)
                 {
                     return true;
