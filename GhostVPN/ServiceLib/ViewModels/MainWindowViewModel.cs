@@ -5,6 +5,7 @@ namespace ServiceLib.ViewModels;
 public class MainWindowViewModel : MyReactiveObject
 {
     private static readonly ConcurrentDictionary<string, string> _countryByServerCache = new();
+    private readonly SemaphoreSlim _connectHealthSemaphore = new(1, 1);
 
     #region Menu
 
@@ -373,6 +374,7 @@ public class MainWindowViewModel : MyReactiveObject
         AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedChange);
         ApplyVpnState(true);
         NoticeManager.Instance.Enqueue("VPN включен");
+        _ = EnsureTunnelHealthAfterConnectAsync();
     }
 
     private async Task DisconnectVpnAsync()
@@ -985,6 +987,41 @@ public class MainWindowViewModel : MyReactiveObject
         await ConfigHandler.SaveConfig(_config);
     }
 
+    private async Task EnsureTunnelHealthAfterConnectAsync()
+    {
+        if (!await _connectHealthSemaphore.WaitAsync(0))
+        {
+            return;
+        }
+
+        try
+        {
+            await Task.Delay(1500);
+            if (!IsVpnConnected || _config.SystemProxyItem.SysProxyType != ESysProxyType.ForcedChange)
+            {
+                return;
+            }
+
+            if (await VerifyTunnelReadyAsync())
+            {
+                return;
+            }
+
+            AppEvents.SysProxyChangeRequested.Publish(ESysProxyType.ForcedClear);
+            await CoreManager.Instance.CoreStop();
+            ApplyVpnState(false);
+            NoticeManager.Instance.Enqueue("Через текущий сервер нет доступа в интернет. VPN отключен, прокси сброшен.");
+        }
+        catch (Exception ex)
+        {
+            Logging.SaveLog("EnsureTunnelHealthAfterConnectAsync", ex);
+        }
+        finally
+        {
+            _connectHealthSemaphore.Release();
+        }
+    }
+
     private async Task<bool> VerifyTunnelReadyAsync()
     {
         try
@@ -995,16 +1032,32 @@ public class MainWindowViewModel : MyReactiveObject
                 return false;
             }
 
-            var testUrl = _config.SpeedTestItem.SpeedPingTestUrl;
-            if (testUrl.IsNullOrEmpty())
+            List<string> probeUrls = new();
+            if (_config.SpeedTestItem.SpeedPingTestUrl.IsNotEmpty())
             {
-                testUrl = Global.SpeedPingTestUrls.FirstOrDefault() ?? "https://www.google.com/generate_204";
+                probeUrls.Add(_config.SpeedTestItem.SpeedPingTestUrl);
             }
+            probeUrls.AddRange([
+                "https://www.google.com/generate_204",
+                "https://api.github.com",
+                "https://yandex.ru"
+            ]);
+            probeUrls = probeUrls
+                .Where(url => url.IsNotEmpty())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
             var webProxy = new WebProxy($"socks5://{Global.Loopback}:{port}");
-            var timeout = Math.Clamp(_config.SpeedTestItem.SpeedTestTimeout, 5, 20);
-            var responseTime = await ConnectionHandler.GetRealPingTime(testUrl, webProxy, timeout);
-            return responseTime > 0;
+            var timeout = Math.Clamp(_config.SpeedTestItem.SpeedTestTimeout, 4, 8);
+            foreach (var url in probeUrls)
+            {
+                var responseTime = await ConnectionHandler.GetRealPingTime(url, webProxy, timeout);
+                if (responseTime > 0)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         catch (Exception ex)
         {
