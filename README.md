@@ -4,7 +4,9 @@
 
 ## Быстро скачать
 
-[![Download Installer](<link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
+[![Скачать для Windows](https://img.shields.io/badge/Скачать-Windows-.exe-blue?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
+
+[![Скачать для macOS](https://img.shields.io/badge/Скачать-macOS-.pkg-black?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.pkg)
 
 ## Скачать
 
