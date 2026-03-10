@@ -8,6 +8,8 @@
 
 [![Скачать для macOS](https://img.shields.io/static/v1?label=%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C&message=macOS%20arm64%20(.pkg)&color=000000&style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.pkg)
 
+[![Скачать для macOS Intel](https://img.shields.io/static/v1?label=%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C&message=macOS%20Intel%20(.pkg)&color=000000&style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-x64.pkg)
+
 ## Скачать
 
 - Windows x64: [GhostVPN-Setup-x64.exe](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
