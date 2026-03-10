@@ -4,12 +4,11 @@
 
 ## ⬇️ Скачать
 
-
 | Платформа | Скачать |
 |-----------|--------|
-[![Windows](https://img.shields.io/static/v1?label=Download&message=Windows%20x64%20(.exe)&color=0078D6&style=for-the-badge&logo=windows11&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe)
-| macOS Apple Silicon | [![Скачать macOS ARM](https://img.shields.io/static/v1?label=Download&message=macOS%20Apple%20Silicon%20(.pkg)&color=000000&style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.pkg) |
-| macOS Intel | [![Скачать macOS Intel](https://img.shields.io/static/v1?label=Download&message=macOS%20Intel%20(.pkg)&color=000000&style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-x64.pkg) |
+| Windows | [![Download Windows](https://img.shields.io/badge/Download-Windows%20x64%20(.exe)-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-Setup-x64.exe) |
+| macOS Apple Silicon | [![Download macOS Apple Silicon](https://img.shields.io/badge/Download-macOS%20Apple%20Silicon%20(.pkg)-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-arm64.pkg) |
+| macOS Intel | [![Download macOS Intel](https://img.shields.io/badge/Download-macOS%20Intel%20(.pkg)-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Cayman152/vpn-client/releases/latest/download/GhostVPN-macOS-x64.pkg) |
 
 ## Поддерживаемые ядра
 
